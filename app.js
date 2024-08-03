@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const playButton = document.getElementById('playButton');
+    const spinner = document.getElementById('spinner');
     
     const player = new Plyr(video, {
         controls: [
@@ -15,21 +16,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const hlsManifest = 'path/to/your/playlist.m3u8';
 
     const initializePlayer = () => {
+        spinner.style.display = 'block';
+        video.style.display = 'none';
+
         if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, dashManifest, true);
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
+                spinner.style.display = 'none';
+                video.style.display = 'block';
+                video.play().catch(error => console.error('Error playing video:', error));
+            });
+            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, (e) => {
+                console.error('Dash.js error:', e);
+                spinner.style.display = 'none';
+                alert('Failed to load DASH stream.');
+            });
         } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
             const hls = new Hls();
             hls.loadSource(hlsManifest);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play();
+                spinner.style.display = 'none';
+                video.style.display = 'block';
+                video.play().catch(error => console.error('Error playing video:', error));
+            });
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    console.error('Hls.js fatal error:', data);
+                    spinner.style.display = 'none';
+                    alert('Failed to load HLS stream.');
+                }
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = hlsManifest;
             video.addEventListener('loadedmetadata', () => {
-                video.play();
+                spinner.style.display = 'none';
+                video.style.display = 'block';
+                video.play().catch(error => console.error('Error playing video:', error));
             });
+            video.addEventListener('error', () => {
+                spinner.style.display = 'none';
+                alert('Failed to load HLS stream.');
+            });
+        } else {
+            spinner.style.display = 'none';
+            alert('No supported stream type found.');
         }
     };
 
