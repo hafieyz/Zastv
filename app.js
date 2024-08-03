@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
     video.addEventListener('enterpictureinpicture', () => {
         console.log('Entered Picture-in-Picture mode.');
     });
