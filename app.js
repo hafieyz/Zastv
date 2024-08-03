@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
     const pipButton = document.getElementById('pipButton');
+    const loadingContainer = document.getElementById('loadingContainer');
 
     const player = new Plyr(video, {
         controls: [
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('card');
             card.innerHTML = `
-                <img src="thumbnail.jpg" alt="${source.label}" />
+                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
                 <div class="card-content">
                     <p>${source.label}</p>
                 </div>
@@ -29,17 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             videoCards.appendChild(card);
         });
+
+        // Play the first available channel by default
+        if (videoSources.length > 0) {
+            initializePlayer(videoSources[0].type, videoSources[0].url);
+        }
+    };
+
+    // Show loading animation
+    const showLoading = () => {
+        loadingContainer.style.display = 'flex';
+    };
+
+    // Hide loading animation
+    const hideLoading = () => {
+        loadingContainer.style.display = 'none';
     };
 
     // Wait for videoSources to be populated
     const waitForSources = () => {
         if (videoSources.length > 2) { // Adjust this if more static sources are added
+            hideLoading();
             createVideoCards();
         } else {
             setTimeout(waitForSources, 500);
         }
     };
 
+    showLoading();
     waitForSources();
 
     const initializePlayer = (type, url) => {
