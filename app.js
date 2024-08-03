@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
+    const pipButton = document.getElementById('pipButton');
     
     const player = new Plyr(video, {
         controls: [
@@ -82,4 +83,24 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('No supported stream type found.');
         }
     };
+
+    pipButton.addEventListener('click', async () => {
+        try {
+            if (video !== document.pictureInPictureElement) {
+                await video.requestPictureInPicture();
+            } else {
+                await document.exitPictureInPicture();
+            }
+        } catch (error) {
+            console.error('Error trying to initiate Picture-in-Picture:', error);
+        }
+    });
+
+    video.addEventListener('enterpictureinpicture', () => {
+        console.log('Entered Picture-in-Picture mode.');
+    });
+
+    video.addEventListener('leavepictureinpicture', () => {
+        console.log('Exited Picture-in-Picture mode.');
+    });
 });
