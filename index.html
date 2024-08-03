@@ -20,13 +20,15 @@
         #player {
             width: 80%;
             max-width: 800px;
-            display: none; /* Initially hide the video element */
         }
         .card-slider {
             display: flex;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
+            position: absolute;
+            bottom: 20px;
+            width: 80%;
         }
         .card {
             flex: none;
@@ -54,10 +56,10 @@
     </style>
 </head>
 <body>
+    <video id="player" controls></video>
     <div class="card-slider" id="videoCards">
         <!-- Cards will be dynamically populated here -->
     </div>
-    <video id="player" controls></video>
     <div id="spinner">
         <img src="spinner.gif" alt="Loading...">
     </div>
