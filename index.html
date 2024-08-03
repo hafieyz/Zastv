@@ -22,32 +22,41 @@
             max-width: 800px;
             display: none; /* Initially hide the video element */
         }
-        #playButton, #selectButton {
-            padding: 10px 20px;
-            font-size: 16px;
+        .card-slider {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .card {
+            flex: none;
+            width: 200px;
+            margin: 10px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            scroll-snap-align: start;
             cursor: pointer;
-            margin-top: 20px;
-            background-color: #1e90ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        }
+        .card img {
+            width: 100%;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .card-content {
+            padding: 10px;
+            text-align: center;
         }
         #spinner {
             display: none;
             margin-top: 20px;
         }
-        #videoSelect {
-            padding: 10px;
-            font-size: 16px;
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
-    <select id="videoSelect">
-        <option value="" disabled selected>Select a video</option>
-    </select>
-    <button id="selectButton">Select Video</button>
+    <div class="card-slider" id="videoCards">
+        <!-- Cards will be dynamically populated here -->
+    </div>
     <video id="player" controls></video>
     <div id="spinner">
         <img src="spinner.gif" alt="Loading...">
