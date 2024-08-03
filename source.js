@@ -6,7 +6,7 @@ const videoSources = [
 
 const m3uUrls = [
     'https://iptv-org.github.io/iptv/countries/my.m3u',
-    //'https://iptv-org.github.io/iptv/countries/us.m3u'
+    'https://raw.githubusercontent.com/imanawesome2010/sooka/main/sooka.m3u'
     // Add more M3U URLs here
 ];
 
