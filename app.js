@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
     const pipButton = document.getElementById('pipButton');
-    
+
     const player = new Plyr(video, {
         controls: [
             'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
@@ -31,8 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Call the function to create video cards
-    createVideoCards();
+    // Wait for videoSources to be populated
+    const waitForSources = () => {
+        if (videoSources.length > 2) { // Adjust this if more static sources are added
+            createVideoCards();
+        } else {
+            setTimeout(waitForSources, 500);
+        }
+    };
+
+    waitForSources();
 
     const initializePlayer = (type, url) => {
         spinner.style.display = 'block';
@@ -103,29 +111,4 @@ document.addEventListener('DOMContentLoaded', () => {
     video.addEventListener('leavepictureinpicture', () => {
         console.log('Exited Picture-in-Picture mode.');
     });
-
-    // Fetch and display M3U channels
-    fetch('https://iptv-org.github.io/iptv/countries/my.m3u')
-        .then(response => response.text())
-        .then(data => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data, 'text/plain');
-            const urls = doc.match(/^https?.*/gm);
-            const names = doc.match(/^#EXTINF:.*?,(.*)/gm).map(line => line.replace(/^#EXTINF:.*?,/, ''));
-            
-            urls.forEach((url, index) => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.innerHTML = `
-                    <div class="card-content">
-                        <p>${names[index]}</p>
-                    </div>
-                `;
-                card.addEventListener('click', () => {
-                    initializePlayer('m3u8', url);
-                });
-                videoCards.appendChild(card);
-            });
-        })
-        .catch(error => console.error('Error fetching M3U playlist:', error));
 });
