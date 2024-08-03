@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
-    const selectButton = document.getElementById('selectButton');
-    const videoSelect = document.getElementById('videoSelect');
+    const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
     
     const player = new Plyr(video, {
@@ -13,12 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
 
-    // Populate the dropdown menu with video sources
+    // Populate the card slider with video sources
     videoSources.forEach(source => {
-        const option = document.createElement('option');
-        option.value = `${source.type}|${source.url}`;
-        option.textContent = source.label;
-        videoSelect.appendChild(option);
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+            <img src="thumbnail.jpg" alt="${source.label}" />
+            <div class="card-content">
+                <p>${source.label}</p>
+            </div>
+        `;
+        card.addEventListener('click', () => {
+            initializePlayer(source.type, source.url);
+        });
+        videoCards.appendChild(card);
     });
 
     const initializePlayer = (type, url) => {
@@ -70,14 +77,4 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('No supported stream type found.');
         }
     };
-
-    selectButton.addEventListener('click', () => {
-        const selectedValue = videoSelect.value;
-        if (selectedValue) {
-            const [type, url] = selectedValue.split('|');
-            initializePlayer(type, url);
-        } else {
-            alert('Please select a video.');
-        }
-    });
 });
