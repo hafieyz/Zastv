@@ -20,11 +20,20 @@
         #player {
             width: 80%;
             max-width: 800px;
+            display: none; /* Initially hide the video element */
         }
         #playButton {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            margin-top: 20px;
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #spinner {
+            display: none;
             margin-top: 20px;
         }
     </style>
@@ -32,6 +41,9 @@
 <body>
     <video id="player" controls></video>
     <button id="playButton">Play Video</button>
+    <div id="spinner">
+        <img src="spinner.gif" alt="Loading...">
+    </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
