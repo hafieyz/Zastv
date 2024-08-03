@@ -18,16 +18,6 @@ body {
     border-radius: 15px;
 }
 
-.plyr__poster {
-    width: 640px; /* Match player width */
-    height: 360px; /* Match player height */
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: cover;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 .card-slider {
     display: flex;
     overflow-x: auto;

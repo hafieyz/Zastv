@@ -2,12 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
+    const pipButton = document.getElementById('pipButton');
     
     const player = new Plyr(video, {
         controls: [
             'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
             'progress', 'current-time', 'duration', 'mute', 'volume', 
-            'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+            'captions', 'settings', 'pip', 'airplay', 'download', 'fullscreen'
         ],
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
@@ -83,6 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    pipButton.addEventListener('click', async () => {
+        try {
+            if (video !== document.pictureInPictureElement) {
+                await video.requestPictureInPicture();
+            } else {
+                await document.exitPictureInPicture();
+            }
+        } catch (error) {
+            console.error('Error trying to initiate Picture-in-Picture:', error);
+        }
+    });
+
     video.addEventListener('enterpictureinpicture', () => {
         console.log('Entered Picture-in-Picture mode.');
     });
@@ -90,4 +103,29 @@ document.addEventListener('DOMContentLoaded', () => {
     video.addEventListener('leavepictureinpicture', () => {
         console.log('Exited Picture-in-Picture mode.');
     });
+
+    // Fetch and display M3U channels
+    fetch('https://iptv-org.github.io/iptv/countries/my.m3u')
+        .then(response => response.text())
+        .then(data => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/plain');
+            const urls = doc.match(/^https?.*/gm);
+            const names = doc.match(/^#EXTINF:.*?,(.*)/gm).map(line => line.replace(/^#EXTINF:.*?,/, ''));
+            
+            urls.forEach((url, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <div class="card-content">
+                        <p>${names[index]}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    initializePlayer('m3u8', url);
+                });
+                videoCards.appendChild(card);
+            });
+        })
+        .catch(error => console.error('Error fetching M3U playlist:', error));
 });
