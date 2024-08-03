@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
-    const playButton = document.getElementById('playButton');
+    const selectButton = document.getElementById('selectButton');
+    const videoSelect = document.getElementById('videoSelect');
     const spinner = document.getElementById('spinner');
     
     const player = new Plyr(video, {
@@ -12,16 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
 
-    const dashManifest = 'https://bitmovin-a.akamaihd.net/content/sintel/sintel.mpd';
-    const hlsManifest = 'path/to/your/playlist.m3u8';
+    // Populate the dropdown menu with video sources
+    videoSources.forEach(source => {
+        const option = document.createElement('option');
+        option.value = `${source.type}|${source.url}`;
+        option.textContent = source.label;
+        videoSelect.appendChild(option);
+    });
 
-    const initializePlayer = () => {
+    const initializePlayer = (type, url) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
 
-        if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
+        if (type === 'mpd' && typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
             const dashPlayer = dashjs.MediaPlayer().create();
-            dashPlayer.initialize(video, dashManifest, true);
+            dashPlayer.initialize(video, url, true);
             dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
                 spinner.style.display = 'none';
                 video.style.display = 'block';
@@ -32,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 spinner.style.display = 'none';
                 alert('Failed to load DASH stream.');
             });
-        } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        } else if (type === 'm3u8' && typeof Hls !== 'undefined' && Hls.isSupported()) {
             const hls = new Hls();
-            hls.loadSource(hlsManifest);
+            hls.loadSource(url);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 spinner.style.display = 'none';
@@ -48,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Failed to load HLS stream.');
                 }
             });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = hlsManifest;
+        } else if (type === 'm3u8' && video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
             video.addEventListener('loadedmetadata', () => {
                 spinner.style.display = 'none';
                 video.style.display = 'block';
@@ -65,8 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    playButton.addEventListener('click', () => {
-        initializePlayer();
-        playButton.style.display = 'none';  // Hide the button after it's clicked
+    selectButton.addEventListener('click', () => {
+        const selectedValue = videoSelect.value;
+        if (selectedValue) {
+            const [type, url] = selectedValue.split('|');
+            initializePlayer(type, url);
+        } else {
+            alert('Please select a video.');
+        }
     });
 });
