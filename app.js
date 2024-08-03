@@ -2,13 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
-    const pipButton = document.getElementById('pipButton');
     
     const player = new Plyr(video, {
         controls: [
             'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
             'progress', 'current-time', 'duration', 'mute', 'volume', 
-            'captions', 'settings', 'pip', 'airplay', 'download', 'fullscreen'
+            'captions', 'settings', 'pip', 'airplay', 'fullscreen'
         ],
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
@@ -84,17 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    pipButton.addEventListener('click', async () => {
-        try {
-            if (video !== document.pictureInPictureElement) {
-                await video.requestPictureInPicture();
-            } else {
-                await document.exitPictureInPicture();
-            }
-        } catch (error) {
-            console.error('Error trying to initiate Picture-in-Picture:', error);
-        }
-    });
 
     video.addEventListener('enterpictureinpicture', () => {
         console.log('Entered Picture-in-Picture mode.');
