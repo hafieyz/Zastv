@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const dashManifest = 'https://d25tgymtnqzu8s.cloudfront.net/smil:sukan/manifest.mpd';
-    const hlsManifest = 'https://d25tgymtnqzu8s.cloudfront.net/smil:berita/playlist.m3u8?id=5';
+    const hlsManifest = 'path/to/your/playlist.m3u8';
 
     if (dashjs.MediaPlayer.isSupported()) {
         const dashPlayer = dashjs.MediaPlayer().create();
