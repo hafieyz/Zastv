@@ -18,11 +18,11 @@
             background-color: #f0f0f0;
         }
         #player {
-            width: flex;
-            max-width: flex;
+            width: 80%;
+            max-width: 800px;
             display: none; /* Initially hide the video element */
         }
-        #playButton {
+        #playButton, #selectButton {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
@@ -36,11 +36,19 @@
             display: none;
             margin-top: 20px;
         }
+        #videoSelect {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
+    <select id="videoSelect">
+        <option value="" disabled selected>Select a video</option>
+    </select>
+    <button id="selectButton">Select Video</button>
     <video id="player" controls></video>
-    <button id="playButton">Play Video</button>
     <div id="spinner">
         <img src="spinner.gif" alt="Loading...">
     </div>
@@ -48,6 +56,7 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="source.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
