@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
 
-    const dashManifest = 'https://d25tgymtnqzu8s.cloudfront.net/smil:sukan/manifest.mpd';
+    const dashManifest = 'https://bitmovin-a.akamaihd.net/content/sintel/sintel.mpd';
     const hlsManifest = 'path/to/your/playlist.m3u8';
 
     if (dashjs.MediaPlayer.isSupported()) {
