@@ -12,21 +12,26 @@ document.addEventListener('DOMContentLoaded', () => {
         settings: ['captions', 'quality', 'speed', 'loop'],
     });
 
-    // Populate the card slider with video sources
-    videoSources.forEach(source => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.innerHTML = `
-            <img src="thumbnail.jpg" alt="${source.label}" />
-            <div class="card-content">
-                <p>${source.label}</p>
-            </div>
-        `;
-        card.addEventListener('click', () => {
-            initializePlayer(source.type, source.url);
+    // Function to create and add video cards
+    const createVideoCards = () => {
+        videoSources.forEach(source => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <img src="thumbnail.jpg" alt="${source.label}" />
+                <div class="card-content">
+                    <p>${source.label}</p>
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                initializePlayer(source.type, source.url);
+            });
+            videoCards.appendChild(card);
         });
-        videoCards.appendChild(card);
-    });
+    };
+
+    // Call the function to create video cards
+    createVideoCards();
 
     const initializePlayer = (type, url) => {
         spinner.style.display = 'block';
