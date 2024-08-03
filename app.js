@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             card.addEventListener('click', () => {
-                initializePlayer(source);
+                initializePlayer(source.type, source.url);
             });
             videoCards.appendChild(card);
         });
@@ -33,8 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Call the function to create video cards
     createVideoCards();
 
-    const initializePlayer = (source) => {
-        const { type, url } = source;
+    const initializePlayer = (type, url) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
 
