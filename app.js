@@ -1,0 +1,31 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('player');
+    const player = new Plyr(video, {
+        controls: [
+            'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
+            'progress', 'current-time', 'duration', 'mute', 'volume', 
+            'captions', 'settings', 'pip', 'airplay', 'download', 'fullscreen'
+        ],
+        settings: ['captions', 'quality', 'speed', 'loop'],
+    });
+
+    const dashManifest = 'https://d25tgymtnqzu8s.cloudfront.net/smil:sukan/manifest.mpd';
+    const hlsManifest = 'https://d25tgymtnqzu8s.cloudfront.net/smil:berita/playlist.m3u8?id=5';
+
+    if (dashjs.MediaPlayer.isSupported()) {
+        const dashPlayer = dashjs.MediaPlayer().create();
+        dashPlayer.initialize(video, dashManifest, true);
+    } else if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(hlsManifest);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play();
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = hlsManifest;
+        video.addEventListener('loadedmetadata', () => {
+            video.play();
+        });
+    }
+});
