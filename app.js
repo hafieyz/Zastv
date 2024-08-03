@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dashManifest = 'https://bitmovin-a.akamaihd.net/content/sintel/sintel.mpd';
     const hlsManifest = 'path/to/your/playlist.m3u8';
 
-    if (dashjs.MediaPlayer.isSupported()) {
+    if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
         const dashPlayer = dashjs.MediaPlayer().create();
         dashPlayer.initialize(video, dashManifest, true);
-    } else if (Hls.isSupported()) {
+    } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(hlsManifest);
         hls.attachMedia(video);
