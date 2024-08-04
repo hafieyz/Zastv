@@ -125,3 +125,26 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 768px) {
+    #main-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #player-container {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    #epg-container {
+        width: 100%;
+        height: 400px; /* Adjust height for mobile */
+    }
+
+    .card-slider {
+        width: 100%;
+    }
+}
