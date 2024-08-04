@@ -2,14 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
-    const pipButton = document.getElementById('pipButton');
     const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
     const channelNameElement = document.getElementById('channel-name'); // New element for channel name
 
     let epgData = [];
     let epgIndex = 0;
-    const epgBatchSize = 10;
+    const epgBatchSize = 100;
 
     const player = new Plyr(video, {
         controls: [
@@ -18,15 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'captions', 'settings', 'pip', 'airplay', 'fullscreen'
         ],
         settings: ['captions', 'quality', 'speed', 'loop'],
-        fullscreen: { enabled: true, fallback: true, iosNative: true } // Enable full-screen support
+        fullscreen: { enabled: true, fallback: true, iosNative: true }
     });
 
     // Function to fetch and play the latest real-time stream
     const playLatestStream = () => {
-        // Replace this URL with the actual URL of your latest real-time stream
         const latestStreamUrl = 'https://example.com/latest-stream.m3u8';
-        
-        // Update the video source and play the stream
         if (Hls.isSupported()) {
             const hls = new Hls();
             hls.loadSource(latestStreamUrl);
@@ -43,54 +39,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Add custom "Live" button to Plyr controls
-    const liveButton = document.createElement('button');
-    liveButton.className = 'plyr__controls__item plyr__controls__item--live';
-    liveButton.innerText = 'Live';
-    liveButton.addEventListener('click', playLatestStream);
+    const addLiveButton = () => {
+        const liveButton = document.createElement('button');
+        liveButton.className = 'plyr__controls__item plyr__controls__item--live';
+        liveButton.innerText = 'Live';
+        liveButton.addEventListener('click', playLatestStream);
+        const controls = document.querySelector('.plyr__controls');
+        if (controls) {
+            controls.appendChild(liveButton);
+        }
+    };
 
-    // Add the "Live" button to the Plyr controls
-    const controls = document.querySelector('.plyr__controls');
-    if (controls) {
-        controls.appendChild(liveButton);
-    }
+    // Function to parse EPG date string
+    const parseEPGDate = (dateString) => {
+        const year = dateString.substring(0, 4);
+        const month = dateString.substring(4, 6) - 1;
+        const day = dateString.substring(6, 8);
+        const hours = dateString.substring(8, 10);
+        const minutes = dateString.substring(10, 12);
+        const seconds = dateString.substring(12, 14);
+        return new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+    };
 
-    // Detect when the player is paused and show the "Live" button
-    video.addEventListener('pause', () => {
-        liveButton.style.display = 'inline-block';
-    });
-
-    // Detect when the player is playing and hide the "Live" button
-    video.addEventListener('play', () => {
-        liveButton.style.display = 'none';
-    });
-
-    // Function to fetch and display EPG data
+    // Function to fetch EPG data
     const fetchEPG = async () => {
         try {
             const response = await fetch('https://raw.githubusercontent.com/AqFad2811/epg/main/epg.xml');
             const text = await response.text();
             const parser = new DOMParser();
-            const xml = parser.parseFromString(text, 'application/xml');
-            return xml;
+            return parser.parseFromString(text, 'application/xml');
         } catch (error) {
             console.error('Error fetching EPG:', error);
         }
     };
 
-    const parseEPGDate = (dateString) => {
-        const year = dateString.substring(0, 4);
-        const month = dateString.substring(4, 6) - 1; // Months are 0-11 in JavaScript
-        const day = dateString.substring(6, 8);
-        const hours = dateString.substring(8, 10);
-        const minutes = dateString.substring(10, 12);
-        const seconds = dateString.substring(12, 14);
-        const offset = dateString.substring(15, 20); // +0000
-    
-        const date = new Date(Date.UTC(year, month, day, hours, minutes, seconds));
-        return date;
-    };
-    
+    // Function to load more EPG data
     const loadMoreEPG = () => {
+        const now = new Date();
         const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
         nextBatch.forEach(program => {
             try {
@@ -99,22 +84,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const stopAttr = program.getAttribute('stop');
                 const start = parseEPGDate(startAttr);
                 const stop = parseEPGDate(stopAttr);
-    
+
                 if (!isNaN(start.getTime()) && !isNaN(stop.getTime())) {
                     const epgItem = document.createElement('div');
                     epgItem.classList.add('epg-item');
-    
+
                     const epgTitle = document.createElement('div');
                     epgTitle.classList.add('epg-title');
                     epgTitle.textContent = title;
-    
+
                     const epgTime = document.createElement('div');
                     epgTime.classList.add('epg-time');
                     epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    
+
                     epgItem.appendChild(epgTitle);
                     epgItem.appendChild(epgTime);
                     epgContainer.appendChild(epgItem);
+
+                    if (now >= start && now <= stop) {
+                        epgItem.classList.add('current-epg');
+                    }
                 } else {
                     console.warn('Invalid start or stop time for program:', program);
                     console.log('Raw start attribute:', startAttr);
@@ -129,17 +118,24 @@ document.addEventListener('DOMContentLoaded', () => {
         epgIndex += epgBatchSize;
     };
 
+    // Function to display EPG for the selected channel
     const displayEPG = (channelName) => {
-        epgContainer.innerHTML = ''; // Clear the container
-        epgIndex = 0; // Reset index
+        epgContainer.innerHTML = '';
+        epgIndex = 0;
 
         fetchEPG().then(xml => {
             const programs = xml.querySelectorAll('programme');
-            epgData = Array.from(programs).filter(program => program.getAttribute('channel') === channelName);
-            loadMoreEPG(); // Initial load
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            epgData = Array.from(programs).filter(program => {
+                const start = parseEPGDate(program.getAttribute('start'));
+                return start >= today && program.getAttribute('channel') === channelName;
+            }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
+            loadMoreEPG();
         });
     };
 
+    // Intersection observer for lazy loading EPG
     const observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
             loadMoreEPG();
@@ -155,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     epgContainer.appendChild(sentinel);
     observer.observe(sentinel);
 
+    // Initialize player and display EPG for the selected channel
     const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
@@ -216,54 +213,53 @@ document.addEventListener('DOMContentLoaded', () => {
         videoSources.forEach(source => {
             const card = document.createElement('div');
             card.classList.add('card');
-            card.innerHTML = `
-                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-            `;
+            card.innerHTML = `<img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />`;
             card.addEventListener('click', () => {
                 initializePlayer(source.type, source.url, source.label);
             });
             videoCards.appendChild(card);
         });
-
+    
         // Play the first available channel by default
         if (videoSources.length > 0) {
             initializePlayer(videoSources[0].type, videoSources[0].url, videoSources[0].label);
         }
     };
 
-    // Show loading animation
-    const showLoading = () => {
-        loadingContainer.style.display = 'flex';
-    };
+        // Show loading animation
+        const showLoading = () => {
+            loadingContainer.style.display = 'flex';
+        };
 
-    // Hide loading animation
-    const hideLoading = () => {
-        loadingContainer.style.display = 'none';
-    };
+        // Hide loading animation
+        const hideLoading = () => {
+            loadingContainer.style.display = 'none';
+        };
 
-    // Wait for videoSources to be populated
-    const waitForSources = () => {
-        if (videoSources.length > 2) { // Adjust this if more static sources are added
-            hideLoading();
-            createVideoCards();
-        } else {
-            setTimeout(waitForSources, 500);
-        }
-    };
-    showLoading();
-    waitForSources();
-
-    pipButton.addEventListener('click', async () => {
-        try {
-            if (video !== document.pictureInPictureElement) {
-                await video.requestPictureInPicture();
+        // Wait for videoSources to be populated
+        const waitForSources = () => {
+            if (videoSources.length > 2) {
+                hideLoading();
+                createVideoCards();
             } else {
-                await document.exitPictureInPicture();
+                setTimeout(waitForSources, 500);
             }
-        } catch (error) {
-            console.error('Error trying to initiate Picture-in-Picture:', error);
-        }
-    });
+        };
+        showLoading();
+        waitForSources();
+
+        // Add Picture-in-Picture functionality
+        pipButton.addEventListener('click', async () => {
+            try {
+                if (video !== document.pictureInPictureElement) {
+                    await video.requestPictureInPicture();
+                } else {
+                    await document.exitPictureInPicture();
+                }
+            } catch (error) {
+                console.error('Error trying to initiate Picture-in-Picture:', error);
+            }
+        });
 
         video.addEventListener('enterpictureinpicture', () => {
             console.log('Entered Picture-in-Picture mode.');
@@ -271,6 +267,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         video.addEventListener('leavepictureinpicture', () => {
             console.log('Exited Picture-in-Picture mode.');
-        });      
-    
-    });
+        });
+
+        // Initialize the player with the first video source
+        addLiveButton();
+
+        });
