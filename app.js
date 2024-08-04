@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const spinner = document.getElementById('spinner');
     const pipButton = document.getElementById('pipButton');
     const loadingContainer = document.getElementById('loadingContainer');
+    const epgContainer = document.getElementById('epg-container');
 
     const player = new Plyr(video, {
         controls: [
@@ -58,53 +59,51 @@ document.addEventListener('DOMContentLoaded', () => {
         liveButton.style.display = 'none';
     });
 
-    // Function to create and add video cards
-    const createVideoCards = () => {
-        videoSources.forEach(source => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.innerHTML = `
-                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-                <div class="card-content">
-                    <p>${source.label}</p>
-                </div>
-            `;
-            card.addEventListener('click', () => {
-                initializePlayer(source.type, source.url);
+    // Function to fetch and display EPG data
+    const fetchEPG = async () => {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/AqFad2811/epg/main/epg.xml');
+            const text = await response.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, 'application/xml');
+            return xml;
+        } catch (error) {
+            console.error('Error fetching EPG:', error);
+        }
+    };
+
+    const displayEPG = (channelName) => {
+        epgContainer.innerHTML = ''; // Clear the container
+
+        fetchEPG().then(xml => {
+            const programs = xml.querySelectorAll('programme');
+            programs.forEach(program => {
+                const channel = program.getAttribute('channel');
+                if (channel === channelName) {
+                    const title = program.querySelector('title').textContent;
+                    const start = new Date(program.getAttribute('start'));
+                    const stop = new Date(program.getAttribute('stop'));
+
+                    const epgItem = document.createElement('div');
+                    epgItem.classList.add('epg-item');
+
+                    const epgTitle = document.createElement('div');
+                    epgTitle.classList.add('epg-title');
+                    epgTitle.textContent = title;
+
+                    const epgTime = document.createElement('div');
+                    epgTime.classList.add('epg-time');
+                    epgTime.textContent = `${start.toLocaleTimeString()} - ${stop.toLocaleTimeString()}`;
+
+                    epgItem.appendChild(epgTitle);
+                    epgItem.appendChild(epgTime);
+                    epgContainer.appendChild(epgItem);
+                }
             });
-            videoCards.appendChild(card);
         });
-
-        // Play the first available channel by default
-        if (videoSources.length > 0) {
-            initializePlayer(videoSources[0].type, videoSources[0].url);
-        }
     };
 
-    // Show loading animation
-    const showLoading = () => {
-        loadingContainer.style.display = 'flex';
-    };
-
-    // Hide loading animation
-    const hideLoading = () => {
-        loadingContainer.style.display = 'none';
-    };
-
-    // Wait for videoSources to be populated
-    const waitForSources = () => {
-        if (videoSources.length > 2) { // Adjust this if more static sources are added
-            hideLoading();
-            createVideoCards();
-        } else {
-            setTimeout(waitForSources, 500);
-        }
-    };
-
-    showLoading();
-    waitForSources();
-
-    const initializePlayer = (type, url) => {
+    const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
 
@@ -152,7 +151,56 @@ document.addEventListener('DOMContentLoaded', () => {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
         }
+
+        // Display EPG for the selected channel
+        displayEPG(channelName);
     };
+
+    // Function to create and add video cards
+    const createVideoCards = () => {
+        videoSources.forEach(source => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+                <div class="card-content">
+                    <p>${source.label}</p>
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                initializePlayer(source.type, source.url, source.label);
+            });
+            videoCards.appendChild(card);
+        });
+
+        // Play the first available channel by default
+        if (videoSources.length > 0) {
+            initializePlayer(videoSources[0].type, videoSources[0].url, videoSources[0].label);
+        }
+    };
+
+    // Show loading animation
+    const showLoading = () => {
+        loadingContainer.style.display = 'flex';
+    };
+
+    // Hide loading animation
+    const hideLoading = () => {
+        loadingContainer.style.display = 'none';
+    };
+
+    // Wait for videoSources to be populated
+    const waitForSources = () => {
+        if (videoSources.length > 2) { // Adjust this if more static sources are added
+            hideLoading();
+            createVideoCards();
+        } else {
+            setTimeout(waitForSources, 500);
+        }
+    };
+
+    showLoading();
+    waitForSources();
 
     pipButton.addEventListener('click', async () => {
         try {
