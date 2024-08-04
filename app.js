@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
 
+    let epgData = [];
+    let epgIndex = 0;
+    const epgBatchSize = 10;
+
     const player = new Plyr(video, {
         controls: [
             'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
@@ -72,36 +76,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const loadMoreEPG = () => {
+        const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
+        nextBatch.forEach(program => {
+            const title = program.querySelector('title').textContent;
+            const start = new Date(program.getAttribute('start'));
+            const stop = new Date(program.getAttribute('stop'));
+
+            const epgItem = document.createElement('div');
+            epgItem.classList.add('epg-item');
+
+            const epgTitle = document.createElement('div');
+            epgTitle.classList.add('epg-title');
+            epgTitle.textContent = title;
+
+            const epgTime = document.createElement('div');
+            epgTime.classList.add('epg-time');
+            epgTime.textContent = `${start.toLocaleTimeString()} - ${stop.toLocaleTimeString()}`;
+
+            epgItem.appendChild(epgTitle);
+            epgItem.appendChild(epgTime);
+            epgContainer.appendChild(epgItem);
+        });
+        epgIndex += epgBatchSize;
+    };
+
     const displayEPG = (channelName) => {
         epgContainer.innerHTML = ''; // Clear the container
+        epgIndex = 0; // Reset index
 
         fetchEPG().then(xml => {
             const programs = xml.querySelectorAll('programme');
-            programs.forEach(program => {
-                const channel = program.getAttribute('channel');
-                if (channel === channelName) {
-                    const title = program.querySelector('title').textContent;
-                    const start = new Date(program.getAttribute('start'));
-                    const stop = new Date(program.getAttribute('stop'));
-
-                    const epgItem = document.createElement('div');
-                    epgItem.classList.add('epg-item');
-
-                    const epgTitle = document.createElement('div');
-                    epgTitle.classList.add('epg-title');
-                    epgTitle.textContent = title;
-
-                    const epgTime = document.createElement('div');
-                    epgTime.classList.add('epg-time');
-                    epgTime.textContent = `${start.toLocaleTimeString()} - ${stop.toLocaleTimeString()}`;
-
-                    epgItem.appendChild(epgTitle);
-                    epgItem.appendChild(epgTime);
-                    epgContainer.appendChild(epgItem);
-                }
-            });
+            epgData = Array.from(programs).filter(program => program.getAttribute('channel') === channelName);
+            loadMoreEPG(); // Initial load
         });
     };
+
+    const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+            loadMoreEPG();
+        }
+    }, {
+        root: epgContainer,
+        threshold: 1.0
+    });
+
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    sentinel.style.width = '100%';
+    epgContainer.appendChild(sentinel);
+    observer.observe(sentinel);
 
     const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
@@ -198,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(waitForSources, 500);
         }
     };
-
     showLoading();
     waitForSources();
 

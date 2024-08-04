@@ -1,12 +1,12 @@
 const videoSources = [
-    { label: 'DASH', type: 'mpd', url: 'https://bitmovin-a.akamaihd.net/content/sintel/sintel.mpd' },
-    { label: 'HLS', type: 'm3u8', url: 'https://mifntechnology.github.io/siaranMy/myIPtv.m3u8' }
+    //{ label: 'DASH', type: 'mpd', url: 'https://bitmovin-a.akamaihd.net/content/sintel/sintel.mpd' },
+    //{ label: 'HLS', type: 'm3u8', url: 'https://raw.githubusercontent.com/MIFNtechnology/siaranMy/main/myIPtv.m3u8' }
     // Additional sources can be added here
 ];
 
 const m3uUrls = [
-    'https://iptv-org.github.io/iptv/countries/my.m3u',
-    'https://raw.githubusercontent.com/imanawesome2010/sooka/main/sooka.m3u'
+    'https://raw.githubusercontent.com/MIFNtechnology/siaranMy/main/myIPtv.m3u8'
+    //'https://raw.githubusercontent.com/imanawesome2010/sooka/main/sooka.m3u'
     // Add more M3U URLs here
 ];
 

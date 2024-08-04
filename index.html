@@ -8,8 +8,13 @@
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div id="player-container">
-        <video id="player" controls></video>
+    <div id="main-container">
+        <div id="player-container">
+            <video id="player" controls></video>
+        </div>
+        <div id="epg-container">
+            <!-- EPG will be dynamically populated here -->
+        </div>
     </div>
     <div class="card-slider" id="videoCards">
         <div class="loading-container" id="loadingContainer">
@@ -18,9 +23,6 @@
     </div>
     <div id="spinner">
         <img src="spinner.gif" alt="Loading...">
-    </div>
-    <div id="epg-container">
-        <!-- EPG will be dynamically populated here -->
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
