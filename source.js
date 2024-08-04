@@ -5,7 +5,8 @@ const videoSources = [
 ];
 
 const m3uUrls = [
-    'https://raw.githubusercontent.com/MIFNtechnology/siaranMy/main/myIPtv.m3u8'
+   // 'https://raw.githubusercontent.com/MIFNtechnology/siaranMy/main/myIPtv.m3u8',
+    'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8'
     //'https://raw.githubusercontent.com/imanawesome2010/sooka/main/sooka.m3u'
     // Add more M3U URLs here
 ];

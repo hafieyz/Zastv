@@ -187,9 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.add('card');
             card.innerHTML = `
                 <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-                <div class="card-content">
-                    <p>${source.label}</p>
-                </div>
             `;
             card.addEventListener('click', () => {
                 initializePlayer(source.type, source.url, source.label);

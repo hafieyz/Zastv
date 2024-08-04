@@ -23,6 +23,9 @@ body {
     background-color: #000;
     border-radius: 10px;
     overflow: hidden;
+    position: relative; /* For floating effect */
+    top: -10px; /* Slightly lift the player */
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2); /* Add shadow for floating effect */
 }
 
 #player {
@@ -65,9 +68,10 @@ body {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     position: relative;
-    width: 90%;
+    width: 100%;
+    height: 10%;
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 10px auto;
     min-height: 150px; /* Minimum height to show loading animation */
 }
 
@@ -83,6 +87,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add transition effect */
+}
+
+.card:hover {
+    transform: translateY(-10px); /* Lift the card on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Deepen shadow on hover */
 }
 
 .card img {
