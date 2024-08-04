@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pipButton = document.getElementById('pipButton');
     const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
+    const channelNameElement = document.getElementById('channel-name'); // New element for channel name
 
     let epgData = [];
     let epgIndex = 0;
@@ -175,6 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
         }
+
+        // Display the current channel name
+        channelNameElement.textContent = channelName;
 
         // Display EPG for the selected channel
         displayEPG(channelName);
