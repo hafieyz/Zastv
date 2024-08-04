@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const start = parseEPGDate(startAttr);
                 const stop = parseEPGDate(stopAttr);
 
-                if (!isNaN(start.getTime()) && !isNaN(stop.getTime())) {
+                if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && start >= now) {
                     const epgItem = document.createElement('div');
                     epgItem.classList.add('epg-item');
 
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         epgIndex += epgBatchSize;
     };
 
-    // Function to display EPG for the selected channel
+    // Function to display EPG for the selected channel from current date and time onward
     const displayEPG = (channelName) => {
         epgContainer.innerHTML = '';
         epgIndex = 0;
@@ -126,10 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchEPG().then(xml => {
             const programs = xml.querySelectorAll('programme');
             const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             epgData = Array.from(programs).filter(program => {
                 const start = parseEPGDate(program.getAttribute('start'));
-                return start >= today && program.getAttribute('channel') === channelName;
+                return start >= now && program.getAttribute('channel') === channelName;
             }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
             loadMoreEPG();
         });
@@ -209,67 +208,67 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Function to create and add video cards
-    const createVideoCards = () => {
-        videoSources.forEach(source => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.innerHTML = `<img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />`;
-            card.addEventListener('click', () => {
-                initializePlayer(source.type, source.url, source.label);
-            });
-            videoCards.appendChild(card);
+    // Function to create and add video cards
+const createVideoCards = () => {
+    videoSources.forEach(source => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `<img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />`;
+        card.addEventListener('click', () => {
+            initializePlayer(source.type, source.url, source.label);
         });
+        videoCards.appendChild(card);
+    });
+
+    // Play the first available channel by default
+    if (videoSources.length > 0) {
+        initializePlayer(videoSources[0].type, videoSources[0].url, videoSources[0].label);
+    }
+};
     
-        // Play the first available channel by default
-        if (videoSources.length > 0) {
-            initializePlayer(videoSources[0].type, videoSources[0].url, videoSources[0].label);
+    // Show loading animation
+    const showLoading = () => {
+        loadingContainer.style.display = 'flex';
+    };
+    
+    // Hide loading animation
+    const hideLoading = () => {
+        loadingContainer.style.display = 'none';
+    };
+    
+    // Wait for videoSources to be populated
+    const waitForSources = () => {
+        if (videoSources.length > 2) {
+            hideLoading();
+            createVideoCards();
+        } else {
+            setTimeout(waitForSources, 500);
         }
     };
-
-        // Show loading animation
-        const showLoading = () => {
-            loadingContainer.style.display = 'flex';
-        };
-
-        // Hide loading animation
-        const hideLoading = () => {
-            loadingContainer.style.display = 'none';
-        };
-
-        // Wait for videoSources to be populated
-        const waitForSources = () => {
-            if (videoSources.length > 2) {
-                hideLoading();
-                createVideoCards();
+    showLoading();
+    waitForSources();
+    
+    // Add Picture-in-Picture functionality
+    pipButton.addEventListener('click', async () => {
+        try {
+            if (video !== document.pictureInPictureElement) {
+                await video.requestPictureInPicture();
             } else {
-                setTimeout(waitForSources, 500);
+                await document.exitPictureInPicture();
             }
-        };
-        showLoading();
-        waitForSources();
-
-        // Add Picture-in-Picture functionality
-        pipButton.addEventListener('click', async () => {
-            try {
-                if (video !== document.pictureInPictureElement) {
-                    await video.requestPictureInPicture();
-                } else {
-                    await document.exitPictureInPicture();
-                }
-            } catch (error) {
-                console.error('Error trying to initiate Picture-in-Picture:', error);
-            }
-        });
-
-        video.addEventListener('enterpictureinpicture', () => {
-            console.log('Entered Picture-in-Picture mode.');
-        });
-
-        video.addEventListener('leavepictureinpicture', () => {
-            console.log('Exited Picture-in-Picture mode.');
-        });
-
-        // Initialize the player with the first video source
-        addLiveButton();
-
-        });
+        } catch (error) {
+            console.error('Error trying to initiate Picture-in-Picture:', error);
+        }
+    });
+    
+    video.addEventListener('enterpictureinpicture', () => {
+        console.log('Entered Picture-in-Picture mode.');
+    });
+    
+    video.addEventListener('leavepictureinpicture', () => {
+        console.log('Exited Picture-in-Picture mode.');
+    });
+    
+    // Initialize the player with the first video source
+    addLiveButton();
+});
