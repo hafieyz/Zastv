@@ -238,11 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    video.addEventListener('enterpictureinpicture', () => {
-        console.log('Entered Picture-in-Picture mode.');
-    });
+        video.addEventListener('enterpictureinpicture', () => {
+            console.log('Entered Picture-in-Picture mode.');
+        });
 
-    video.addEventListener('leavepictureinpicture', () => {
-        console.log('Exited Picture-in-Picture mode.');
+        video.addEventListener('leavepictureinpicture', () => {
+            console.log('Exited Picture-in-Picture mode.');
+        });      
+    
     });
-});

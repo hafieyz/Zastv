@@ -36,17 +36,29 @@ body {
     background-color: #000;
 }
 
-#current-channel {
+#epg-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px; /* Set a fixed width */
+    margin-left: 20px; /* Add space between player and EPG container */
+    margin-bottom: 10px;
+}
+
+#now-playing {
     background-color: #88eae8;
     color: #fff;
-    padding: 2px;
+    padding: 5px;
     text-align: center;
-    border-radius: 0 0 10px 10px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 #epg-container {
-    flex: 1;
-    width: 300px; /* Set a fixed width */
+    width: 100%;
     height: 400px; /* Set a fixed height */
     background-color: #fff;
     border-radius: 10px;
@@ -155,6 +167,12 @@ body {
         width: 100%;
         margin-right: 0;
         margin-bottom: 20px;
+    }
+
+    #now-playing {
+        font-size: 10px;
+        padding: 3px;
+        width: 100%;
     }
 
     #epg-container {
