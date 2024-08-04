@@ -77,27 +77,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const parseEPGDate = (dateString) => {
+        const year = dateString.substring(0, 4);
+        const month = dateString.substring(4, 6) - 1; // Months are 0-11 in JavaScript
+        const day = dateString.substring(6, 8);
+        const hours = dateString.substring(8, 10);
+        const minutes = dateString.substring(10, 12);
+        const seconds = dateString.substring(12, 14);
+        const offset = dateString.substring(15, 20); // +0000
+    
+        const date = new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+        return date;
+    };
+    
     const loadMoreEPG = () => {
         const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
         nextBatch.forEach(program => {
-            const title = program.querySelector('title').textContent;
-            const start = new Date(program.getAttribute('start'));
-            const stop = new Date(program.getAttribute('stop'));
-
-            const epgItem = document.createElement('div');
-            epgItem.classList.add('epg-item');
-
-            const epgTitle = document.createElement('div');
-            epgTitle.classList.add('epg-title');
-            epgTitle.textContent = title;
-
-            const epgTime = document.createElement('div');
-            epgTime.classList.add('epg-time');
-            epgTime.textContent = `${start.toLocaleTimeString()} - ${stop.toLocaleTimeString()}`;
-
-            epgItem.appendChild(epgTitle);
-            epgItem.appendChild(epgTime);
-            epgContainer.appendChild(epgItem);
+            try {
+                const title = program.querySelector('title')?.textContent || 'No Title';
+                const startAttr = program.getAttribute('start');
+                const stopAttr = program.getAttribute('stop');
+                const start = parseEPGDate(startAttr);
+                const stop = parseEPGDate(stopAttr);
+    
+                if (!isNaN(start.getTime()) && !isNaN(stop.getTime())) {
+                    const epgItem = document.createElement('div');
+                    epgItem.classList.add('epg-item');
+    
+                    const epgTitle = document.createElement('div');
+                    epgTitle.classList.add('epg-title');
+                    epgTitle.textContent = title;
+    
+                    const epgTime = document.createElement('div');
+                    epgTime.classList.add('epg-time');
+                    epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    
+                    epgItem.appendChild(epgTitle);
+                    epgItem.appendChild(epgTime);
+                    epgContainer.appendChild(epgItem);
+                } else {
+                    console.warn('Invalid start or stop time for program:', program);
+                    console.log('Raw start attribute:', startAttr);
+                    console.log('Raw stop attribute:', stopAttr);
+                    console.log('Parsed start time:', start);
+                    console.log('Parsed stop time:', stop);
+                }
+            } catch (error) {
+                console.error('Error processing EPG program:', program, error);
+            }
         });
         epgIndex += epgBatchSize;
     };
