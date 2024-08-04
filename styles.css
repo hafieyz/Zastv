@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    margin-top: 10;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -10,18 +10,34 @@ body {
     background-color: #f0f0f0;
 }
 
-#player {
+#player-container {
+    width: 100%;
+    max-width: 900px; /* Optional: Set a max-width for better layout */
+    padding: 20px; /* Add space around the player */
+    box-sizing: border-box; /* Ensure padding is included in the width and height */
     display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#player {
+    width: 100%; /* Ensure it can expand fully */
+    height: 100%; /* Ensure it can expand fully */
+    max-width: none; /* Remove any max size restrictions */
+    max-height: none; /* Remove any max size restrictions */
+    margin: 0;
+    background-color: #f0f0f000;
 }
 
 .card-slider {
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden; /* Prevent vertical scrolling */
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     position: relative; /* Changed from absolute to relative */
-    top: 40px; /* Adjust the top position */
-    width: 80%;
+    top: 20px; /* Adjust the top position */
+    width: 100%;
     margin-top: 20px; /* Add margin to move the card slider down */
     min-height: 150px; /* Minimum height to show loading animation */
 }
@@ -52,11 +68,7 @@ body {
 .card-content {
     padding: 10px;
     text-align: center;
-}
-
-#spinner {
-    display: none;
-    margin-top: 20px;
+    margin-top: auto; /* Move text to the top */
 }
 
 .loading-container {
@@ -79,4 +91,12 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.plyr__controls__item--live {
+    background-color: #ff0000; /* Red background for visibility */
+    color: white;
+    padding: 0 5px;
+    border-radius: 10px;
+    cursor: pointer;
 }

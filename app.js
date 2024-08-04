@@ -9,9 +9,53 @@ document.addEventListener('DOMContentLoaded', () => {
         controls: [
             'play-large', 'restart', 'rewind', 'play', 'fast-forward', 
             'progress', 'current-time', 'duration', 'mute', 'volume', 
-            'captions', 'settings', 'pip', 'airplay', 'download', 'fullscreen'
+            'captions', 'settings', 'pip', 'airplay', 'fullscreen'
         ],
         settings: ['captions', 'quality', 'speed', 'loop'],
+        fullscreen: { enabled: true, fallback: true, iosNative: true } // Enable full-screen support
+    });
+
+    // Function to fetch and play the latest real-time stream
+    const playLatestStream = () => {
+        // Replace this URL with the actual URL of your latest real-time stream
+        const latestStreamUrl = 'https://example.com/latest-stream.m3u8';
+        
+        // Update the video source and play the stream
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(latestStreamUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play().catch(error => console.error('Error playing video:', error));
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = latestStreamUrl;
+            video.play().catch(error => console.error('Error playing video:', error));
+        } else {
+            console.error('No support for HLS streams.');
+        }
+    };
+
+    // Add custom "Live" button to Plyr controls
+    const liveButton = document.createElement('button');
+    liveButton.className = 'plyr__controls__item plyr__controls__item--live';
+    liveButton.innerText = 'Live';
+    liveButton.addEventListener('click', playLatestStream);
+
+    // Add the "Live" button to the Plyr controls
+    const controls = document.querySelector('.plyr__controls');
+    if (controls) {
+        controls.appendChild(liveButton);
+    }
+
+    // Detect when the player is paused and show the "Live" button
+    video.addEventListener('pause', () => {
+        liveButton.style.display = 'inline-block';
+    });
+
+    // Detect when the player is playing and hide the "Live" button
+    video.addEventListener('play', () => {
+        liveButton.style.display = 'none';
     });
 
     // Function to create and add video cards
