@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadMoreEPG = () => {
         const now = new Date();
         const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
-        nextBatch.forEach(program => {
+        nextBatch.forEach((program, index) => {
             try {
                 const title = program.querySelector('title')?.textContent || 'No Title';
                 const startAttr = program.getAttribute('start');
@@ -100,6 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     epgItem.appendChild(epgTitle);
                     epgItem.appendChild(epgTime);
                     epgContainer.appendChild(epgItem);
+
+                    if (index === 0) {
+                        epgItem.classList.add('current-epg');
+                    } else if (index === 1) {
+                        const comingNextText = document.createElement('div');
+                        comingNextText.classList.add('coming-next-text');
+                        comingNextText.textContent = 'Coming Next';
+                        epgItem.prepend(comingNextText);
+                        epgItem.classList.add('coming-next');
+                    }
 
                     if (now >= start && now <= stop) {
                         epgItem.classList.add('current-epg');
@@ -200,75 +210,79 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('No supported stream type found.');
         }
 
-        // Display the current channel name
-        channelNameElement.textContent = channelName;
+       // Display EPG for the selected channel
+            displayEPG(channelName);
+            };
 
-        // Display EPG for the selected channel
-        displayEPG(channelName);
-    };
-
-  
-    // Function to create and add video cards
-    const createVideoCards = () => {
-        videoSources.forEach(source => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.innerHTML = `
-                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-                <div class="card-content">
-                    <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
-                </div>
-            `;
-            card.addEventListener('click', () => {
-                initializePlayer(source.type, source.url, source.label);
+       // Function to create and add video cards
+        const createVideoCards = () => {
+            videoSources.forEach(source => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+                    <div class="card-content">
+                        <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    initializePlayer(source.type, source.url, source.label);
+                });
+                videoCards.appendChild(card);
             });
-            videoCards.appendChild(card);
-        });
-    };
-    
-    // Show loading animation
-    const showLoading = () => {
-        loadingContainer.style.display = 'flex';
-    };
-    
-    // Hide loading animation
-    const hideLoading = () => {
-        loadingContainer.style.display = 'none';
-    };
-    
-    // Wait for videoSources to be populated
-    const waitForSources = () => {
-        if (videoSources.length > 2) {
-            hideLoading();
-            createVideoCards();
-        } else {
-            setTimeout(waitForSources, 500);
-        }
-    };
-    showLoading();
-    waitForSources();
-    
-    // Add Picture-in-Picture functionality
-    pipButton.addEventListener('click', async () => {
-        try {
-            if (video !== document.pictureInPictureElement) {
-                await video.requestPictureInPicture();
+        };
+
+        // Show loading animation
+        const showLoading = () => {
+            loadingContainer.style.display = 'flex';
+        };
+
+        // Hide loading animation
+        const hideLoading = () => {
+            loadingContainer.style.display = 'none';
+        };
+
+        // Wait for videoSources to be populated
+        const waitForSources = () => {
+            if (videoSources.length > 2) {
+                hideLoading();
+                createVideoCards();
             } else {
-                await document.exitPictureInPicture();
+                setTimeout(waitForSources, 500);
             }
-        } catch (error) {
-            console.error('Error trying to initiate Picture-in-Picture:', error);
+        };
+
+        showLoading();
+        waitForSources();
+
+        // Add Picture-in-Picture functionality
+        const pipButton = document.createElement('button');
+        pipButton.innerText = 'PiP';
+        pipButton.addEventListener('click', async () => {
+            try {
+                if (video !== document.pictureInPictureElement) {
+                    await video.requestPictureInPicture();
+                } else {
+                    await document.exitPictureInPicture();
+                }
+            } catch (error) {
+                console.error('Error trying to initiate Picture-in-Picture:', error);
+            }
+        });
+
+        const controls = document.querySelector('.plyr__controls');
+        if (controls) {
+            controls.appendChild(pipButton);
         }
+
+        video.addEventListener('enterpictureinpicture', () => {
+            console.log('Entered Picture-in-Picture mode.');
+        });
+
+        video.addEventListener('leavepictureinpicture', () => {
+            console.log('Exited Picture-in-Picture mode.');
+        });
+
+        // Initialize the player with the first video source
+        addLiveButton();
     });
-    
-    video.addEventListener('enterpictureinpicture', () => {
-        console.log('Entered Picture-in-Picture mode.');
-    });
-    
-    video.addEventListener('leavepictureinpicture', () => {
-        console.log('Exited Picture-in-Picture mode.');
-    });
-    
-    // Initialize the player with the first video source
-    addLiveButton();
-});
