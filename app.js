@@ -207,24 +207,24 @@ document.addEventListener('DOMContentLoaded', () => {
         displayEPG(channelName);
     };
 
+  
     // Function to create and add video cards
-    // Function to create and add video cards
-const createVideoCards = () => {
-    videoSources.forEach(source => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.innerHTML = `<img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />`;
-        card.addEventListener('click', () => {
-            initializePlayer(source.type, source.url, source.label);
+    const createVideoCards = () => {
+        videoSources.forEach(source => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+                <div class="card-content">
+                    <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                initializePlayer(source.type, source.url, source.label);
+            });
+            videoCards.appendChild(card);
         });
-        videoCards.appendChild(card);
-    });
-
-    // Play the first available channel by default
-    if (videoSources.length > 0) {
-        initializePlayer(videoSources[0].type, videoSources[0].url, videoSources[0].label);
-    }
-};
+    };
     
     // Show loading animation
     const showLoading = () => {

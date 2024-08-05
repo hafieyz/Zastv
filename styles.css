@@ -120,6 +120,7 @@ body {
 }
 
 .card {
+    position: relative; /* Add this to position the LIVE badge */
     flex: none;
     width: 200px;
     margin: 10px;
@@ -151,6 +152,23 @@ body {
 .card-content {
     padding: 10px;
     text-align: center;
+    position: relative; /* Add this to position the LIVE badge */
+    width: 100%; /* Ensure the card content fills the card */
+}
+
+/* New styles for LIVE text */
+.live-badge {
+    position: absolute;
+    bottom: 10px; /* Adjust as needed */
+    right: 20px; /* Align to the right side */
+    background-color: red;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 1;
 }
 
 .fade-effect {
@@ -198,6 +216,7 @@ body {
     }
 
     #player-container {
+        flex: 4;
         width: 100%;
         margin-right: 0;
         margin-bottom: 20px;
