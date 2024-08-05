@@ -83,13 +83,19 @@ body {
 
 /* Highlight currently playing EPG item */
 .current-epg {
-    background-color: #d3f8d3;
+    /* background-color: #d3f8d3;*/
     border-left: 5px solid #4caf50;
+}
+
+.current-playing-text {
+    color: #4caf50;
+    font-weight: bold;
+    margin-top: 5px;
 }
 
 /* Style for "Coming Next" text */
 .coming-next {
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
     border-left: 5px solid #f39c12;
 }
 
@@ -98,6 +104,9 @@ body {
     font-weight: bold;
     margin-top: 5px;
 }
+
+
+
 
 .card-slider-wrapper {
     display: flex;

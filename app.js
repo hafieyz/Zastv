@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let epgData = [];
     let epgIndex = 0;
-    const epgBatchSize = 100;
+    const epgBatchSize = 20;
 
     const player = new Plyr(video, {
         controls: [
@@ -102,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     epgContainer.appendChild(epgItem);
 
                     if (index === 0) {
+                        const currentPlayingText = document.createElement('div');
+                        currentPlayingText.classList.add('current-playing-text');
+                        currentPlayingText.textContent = 'Now Showing';
+                        epgItem.prepend(currentPlayingText);
                         epgItem.classList.add('current-epg');
                     } else if (index === 1) {
                         const comingNextText = document.createElement('div');
@@ -255,33 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading();
         waitForSources();
 
-        // Add Picture-in-Picture functionality
-        const pipButton = document.createElement('button');
-        pipButton.innerText = 'PiP';
-        pipButton.addEventListener('click', async () => {
-            try {
-                if (video !== document.pictureInPictureElement) {
-                    await video.requestPictureInPicture();
-                } else {
-                    await document.exitPictureInPicture();
-                }
-            } catch (error) {
-                console.error('Error trying to initiate Picture-in-Picture:', error);
-            }
-        });
 
-        const controls = document.querySelector('.plyr__controls');
-        if (controls) {
-            controls.appendChild(pipButton);
-        }
 
-        video.addEventListener('enterpictureinpicture', () => {
-            console.log('Entered Picture-in-Picture mode.');
-        });
-
-        video.addEventListener('leavepictureinpicture', () => {
-            console.log('Exited Picture-in-Picture mode.');
-        });
 
         // Initialize the player with the first video source
         addLiveButton();
