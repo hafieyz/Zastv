@@ -18,7 +18,7 @@ body {
 }
 
 #player-container {
-    flex: 3;
+    flex: 4;
     margin-right: 20px;
     background-color: #000;
     border-radius: 10px;
