@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let epgData = [];
     let epgIndex = 0;
-    const epgBatchSize = 20;
+    const epgBatchSize = 15;
 
     const player = new Plyr(video, {
         controls: [
@@ -20,35 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fullscreen: { enabled: true, fallback: true, iosNative: true }
     });
 
-    // Function to fetch and play the latest real-time stream
-    const playLatestStream = () => {
-        const latestStreamUrl = 'https://example.com/latest-stream.m3u8';
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(latestStreamUrl);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play().catch(error => console.error('Error playing video:', error));
-            });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = latestStreamUrl;
-            video.play().catch(error => console.error('Error playing video:', error));
-        } else {
-            console.error('No support for HLS streams.');
-        }
-    };
-
-    // Add custom "Live" button to Plyr controls
-    const addLiveButton = () => {
-        const liveButton = document.createElement('button');
-        liveButton.className = 'plyr__controls__item plyr__controls__item--live';
-        liveButton.innerText = 'Live';
-        liveButton.addEventListener('click', playLatestStream);
-        const controls = document.querySelector('.plyr__controls');
-        if (controls) {
-            controls.appendChild(liveButton);
-        }
-    };
 
     // Function to parse EPG date string
     const parseEPGDate = (dateString) => {
@@ -104,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (index === 0) {
                         const currentPlayingText = document.createElement('div');
                         currentPlayingText.classList.add('current-playing-text');
-                        currentPlayingText.textContent = 'Now Showing';
+                        currentPlayingText.textContent = 'Current Playing';
                         epgItem.prepend(currentPlayingText);
                         epgItem.classList.add('current-epg');
                     } else if (index === 1) {
@@ -154,21 +125,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loadMoreEPG();
         }
     }, {
-        root: epgContainer,
-        threshold: 1.0
+        root: epgContainer,    threshold: 1.0
     });
-
+    
     const sentinel = document.createElement('div');
     sentinel.style.height = '1px';
     sentinel.style.width = '100%';
     epgContainer.appendChild(sentinel);
     observer.observe(sentinel);
-
+    
     // Initialize player and display EPG for the selected channel
     const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
-
+    
         if (type === 'mpd' && typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, url, true);
@@ -213,55 +183,55 @@ document.addEventListener('DOMContentLoaded', () => {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
         }
-
-       // Display EPG for the selected channel
-            displayEPG(channelName);
-            };
-
-       // Function to create and add video cards
-        const createVideoCards = () => {
-            videoSources.forEach(source => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.innerHTML = `
-                    <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-                    <div class="card-content">
-                        <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
-                    </div>
-                `;
-                card.addEventListener('click', () => {
-                    initializePlayer(source.type, source.url, source.label);
-                });
-                videoCards.appendChild(card);
+    
+        // Display the current channel name
+        channelNameElement.textContent = channelName;
+    
+        // Display EPG for the selected channel
+        displayEPG(channelName);
+    };
+    
+    // Function to create and add video cards
+    const createVideoCards = () => {
+        videoSources.forEach(source => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+                <div class="card-content">
+                    <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                initializePlayer(source.type, source.url, source.label);
             });
-        };
+            videoCards.appendChild(card);
+        });
+    };
+    
+    // Show loading animation
+    const showLoading = () => {
+        loadingContainer.style.display = 'flex';
+    };
+    
+    // Hide loading animation
+    const hideLoading = () => {
+        loadingContainer.style.display = 'none';
+    };
+    
+    // Wait for videoSources to be populated
+    const waitForSources = () => {
+        if (videoSources.length > 2) {
+            hideLoading();
+            createVideoCards();
+        } else {
+            setTimeout(waitForSources, 500);
+        }
+    };
+    
+    showLoading();
+    waitForSources();
+    
+    
 
-        // Show loading animation
-        const showLoading = () => {
-            loadingContainer.style.display = 'flex';
-        };
-
-        // Hide loading animation
-        const hideLoading = () => {
-            loadingContainer.style.display = 'none';
-        };
-
-        // Wait for videoSources to be populated
-        const waitForSources = () => {
-            if (videoSources.length > 2) {
-                hideLoading();
-                createVideoCards();
-            } else {
-                setTimeout(waitForSources, 500);
-            }
-        };
-
-        showLoading();
-        waitForSources();
-
-
-
-
-        // Initialize the player with the first video source
-        addLiveButton();
-    });
+});
