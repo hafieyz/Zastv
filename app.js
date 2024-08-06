@@ -47,6 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to load more EPG data
     const loadMoreEPG = () => {
         const now = new Date();
+    
+        // Function to convert to Malaysia time
+        const toMalaysiaTime = (date) => {
+            // Malaysia time is UTC+8
+            const malaysiaOffset = 8 * 60; // in minutes
+            const localTime = new Date(date.getTime() + (malaysiaOffset * 60000));
+            return localTime;
+        };
+    
         const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
         nextBatch.forEach((program, index) => {
             try {
@@ -55,23 +64,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const stopAttr = program.getAttribute('stop');
                 const start = parseEPGDate(startAttr);
                 const stop = parseEPGDate(stopAttr);
-
+    
                 if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && start >= now) {
                     const epgItem = document.createElement('div');
                     epgItem.classList.add('epg-item');
-
+    
                     const epgTitle = document.createElement('div');
                     epgTitle.classList.add('epg-title');
                     epgTitle.textContent = title;
-
+    
                     const epgTime = document.createElement('div');
                     epgTime.classList.add('epg-time');
-                    epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-
+                    
+                    const startMalaysiaTime = toMalaysiaTime(start);
+                    const stopMalaysiaTime = toMalaysiaTime(stop);
+                    
+                    epgTime.textContent = `${startMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stopMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    
                     epgItem.appendChild(epgTitle);
                     epgItem.appendChild(epgTime);
                     epgContainer.appendChild(epgItem);
-
+    
                     if (index === 0) {
                         const currentPlayingText = document.createElement('div');
                         currentPlayingText.classList.add('current-playing-text');
@@ -85,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         epgItem.prepend(comingNextText);
                         epgItem.classList.add('coming-next');
                     }
-
+    
                     if (now >= start && now <= stop) {
                         epgItem.classList.add('current-epg');
                     }

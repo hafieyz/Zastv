@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPG Display Test</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #epgContainer {
+            margin-top: 20px;
+        }
+        .epg-item {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .epg-title {
+            font-weight: bold;
+        }
+        .epg-time {
+            color: #555;
+        }
+        .current-epg {
+            background-color: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>EPG Display Test</h1>
+    <video id="player" controls></video>
+    <button id="loadEPGButton">Load EPG for Channel</button>
+    <div id="epgContainer"></div>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        const epgContainer = document.getElementById('epgContainer');
+        let epgIndex = 0;
+        const epgBatchSize = 10; // Adjust as needed
+        let epgData = [];
+
+        const fetchEPG = async () => {
+            // Simulated fetch for EPG data
+            // Replace this with actual fetch logic
+            const response = await fetch('https://raw.githubusercontent.com/AqFad2811/epg/main/epg.xml');
+            const text = await response.text();
+            const parser = new DOMParser();
+            return parser.parseFromString(text, 'application/xml');
+        };
+
+        const parseEPGDate = (dateString) => {
+            // Replace this with your actual date parsing logic
+            return new Date(dateString);
+        };
+
+        // Function to load more EPG data for the current date
+        const loadMoreEPG = () => {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+            const toMalaysiaTime = (date) => {
+                const malaysiaOffset = 8 * 60; // in minutes
+                return new Date(date.getTime() + (malaysiaOffset * 60000));
+            };
+
+            const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
+            nextBatch.forEach((program, index) => {
+                try {
+                    const title = program.querySelector('title')?.textContent || 'No Title';
+                    const startAttr = program.getAttribute('start');
+                    const stopAttr = program.getAttribute('stop');
+                    const start = parseEPGDate(startAttr);
+                    const stop = parseEPGDate(stopAttr);
+
+                    if (start >= todayStart && start < todayEnd) {
+                        const epgItem = document.createElement('div');
+                        epgItem.classList.add('epg-item');
+
+                        const epgTitle = document.createElement('div');
+                        epgTitle.classList.add('epg-title');
+                        epgTitle.textContent = title;
+
+                        const epgTime = document.createElement('div');
+                        epgTime.classList.add('epg-time');
+
+                        const startMalaysiaTime = toMalaysiaTime(start);
+                        const stopMalaysiaTime = toMalaysiaTime(stop);
+
+                        epgTime.textContent = `${startMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stopMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+                        epgItem.appendChild(epgTitle);
+                        epgItem.appendChild(epgTime);
+                        epgContainer.appendChild(epgItem);
+
+                        if (index === 0) {
+                            const currentPlayingText = document.createElement('div');
+                            currentPlayingText.classList.add('current-playing-text');
+                            currentPlayingText.textContent = 'Current Playing';
+                            epgItem.prepend(currentPlayingText);
+                            epgItem.classList.add('current-epg');
+                        } else if (index === 1) {
+                            const comingNextText = document.createElement('div');
+                            comingNextText.classList.add('coming-next-text');
+                            comingNextText.textContent = 'Coming Next';
+                            epgItem.prepend(comingNextText);
+                            epgItem.classList.add('coming-next');
+                        }
+
+                        if (now >= start && now <= stop) {
+                            epgItem.classList.add('current-epg');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error processing EPG program:', program, error);
+                }
+            });
+            epgIndex += epgBatchSize;
+        };
+
+        // Function to display EPG for the selected channel from current date and time onward
+        const displayEPG = async (channelName) => {
+            try {
+                epgContainer.innerHTML = '';
+                epgIndex = 0;
+
+                // Fetch EPG data
+                const xml = await fetchEPG();
+
+                // Parse EPG programs
+                const programs = Array.from(xml.querySelectorAll('programme'));
+                const now = new Date();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+                const isTodayAndMatchesChannel = (program) => {
+                    const start = parseEPGDate(program.getAttribute('start'));
+                    return start >= todayStart && start < todayEnd && program.getAttribute('channel') === channelName;
+                };
+
+                // Filter and sort programs for the selected channel from the current date and time onward
+                epgData = programs.filter(isTodayAndMatchesChannel)
+                                  .sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
+
+                console.log('Filtered and sorted EPG data:', epgData);
+
+                // Load more EPG data
+                loadMoreEPG();
+            } catch (error) {
+                console.error('Error fetching or processing EPG data:', error);
+            }
+        };
+
+        document.getElementById('loadEPGButton').addEventListener('click', () => {
+            const channelName = 'YourChannelName'; // Replace with your actual channel name
+            displayEPG(channelName);
+        });
+    </script>
+</body>
+</html>
