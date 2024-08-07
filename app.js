@@ -44,93 +44,94 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Function to load more EPG data
-    const loadMoreEPG = () => {
-        const now = new Date();
-    
-        // Function to convert to Malaysia time
-        const toMalaysiaTime = (date) => {
-            // Malaysia time is UTC+8
-            const malaysiaOffset = 8 * 60; // in minutes
-            const localTime = new Date(date.getTime() + (malaysiaOffset * 60000));
-            return localTime;
-        };
-    
-        const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
-        nextBatch.forEach((program, index) => {
-            try {
-                const title = program.querySelector('title')?.textContent || 'No Title';
-                const startAttr = program.getAttribute('start');
-                const stopAttr = program.getAttribute('stop');
-                const start = parseEPGDate(startAttr);
-                const stop = parseEPGDate(stopAttr);
-    
-                if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && start >= now) {
-                    const epgItem = document.createElement('div');
-                    epgItem.classList.add('epg-item');
-    
-                    const epgTitle = document.createElement('div');
-                    epgTitle.classList.add('epg-title');
-                    epgTitle.textContent = title;
-    
-                    const epgTime = document.createElement('div');
-                    epgTime.classList.add('epg-time');
-                    
-                    const startMalaysiaTime = toMalaysiaTime(start);
-                    const stopMalaysiaTime = toMalaysiaTime(stop);
-                    
-                    epgTime.textContent = `${startMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stopMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    
-                    epgItem.appendChild(epgTitle);
-                    epgItem.appendChild(epgTime);
-                    epgContainer.appendChild(epgItem);
-    
-                    if (index === 0) {
-                        const currentPlayingText = document.createElement('div');
-                        currentPlayingText.classList.add('current-playing-text');
-                        currentPlayingText.textContent = 'Current Playing';
-                        epgItem.prepend(currentPlayingText);
-                        epgItem.classList.add('current-epg');
-                    } else if (index === 1) {
-                        const comingNextText = document.createElement('div');
-                        comingNextText.classList.add('coming-next-text');
-                        comingNextText.textContent = 'Coming Next';
-                        epgItem.prepend(comingNextText);
-                        epgItem.classList.add('coming-next');
-                    }
-    
-                    if (now >= start && now <= stop) {
-                        epgItem.classList.add('current-epg');
-                    }
-                } else {
-                    console.warn('Invalid start or stop time for program:', program);
-                    console.log('Raw start attribute:', startAttr);
-                    console.log('Raw stop attribute:', stopAttr);
-                    console.log('Parsed start time:', start);
-                    console.log('Parsed stop time:', stop);
+// Function to load more EPG data
+const loadMoreEPG = () => {
+    const now = new Date();
+
+    // Function to convert to Malaysia time
+    const toMalaysiaTime = (date) => {
+        // Malaysia time is UTC+8
+        const malaysiaOffset = 8 * 60; // in minutes
+        const localTime = new Date(date.getTime() + (malaysiaOffset * 60000));
+        return localTime;
+    };
+
+    const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
+    nextBatch.forEach((program, index) => {
+        try {
+            const title = program.querySelector('title')?.textContent || 'No Title';
+            const startAttr = program.getAttribute('start');
+            const stopAttr = program.getAttribute('stop');
+            const start = parseEPGDate(startAttr);
+            const stop = parseEPGDate(stopAttr);
+
+            if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && stop >= now) {
+                const epgItem = document.createElement('div');
+                epgItem.classList.add('epg-item');
+
+                const epgTitle = document.createElement('div');
+                epgTitle.classList.add('epg-title');
+                epgTitle.textContent = title;
+
+                const epgTime = document.createElement('div');
+                epgTime.classList.add('epg-time');
+
+                const startMalaysiaTime = toMalaysiaTime(start);
+                const stopMalaysiaTime = toMalaysiaTime(stop);
+
+                epgTime.textContent = `${startMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stopMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+                epgItem.appendChild(epgTitle);
+                epgItem.appendChild(epgTime);
+                epgContainer.appendChild(epgItem);
+
+                if (index === 0) {
+                    const currentPlayingText = document.createElement('div');
+                    currentPlayingText.classList.add('current-playing-text');
+                    currentPlayingText.textContent = 'Current Playing';
+                    epgItem.prepend(currentPlayingText);
+                    epgItem.classList.add('current-epg');
+                } else if (index === 1) {
+                    const comingNextText = document.createElement('div');
+                    comingNextText.classList.add('coming-next-text');
+                    comingNextText.textContent = 'Coming Next';
+                    epgItem.prepend(comingNextText);
+                    epgItem.classList.add('coming-next');
                 }
-            } catch (error) {
-                console.error('Error processing EPG program:', program, error);
+
+                if (now >= start && now <= stop) {
+                    epgItem.classList.add('current-epg');
+                }
+            } else {
+                console.warn('Invalid start or stop time for program:', program);
+                console.log('Raw start attribute:', startAttr);
+                console.log('Raw stop attribute:', stopAttr);
+                console.log('Parsed start time:', start);
+                console.log('Parsed stop time:', stop);
             }
-        });
-        epgIndex += epgBatchSize;
-    };
+        } catch (error) {
+            console.error('Error processing EPG program:', program, error);
+        }
+    });
+    epgIndex += epgBatchSize;
+};
 
-    // Function to display EPG for the selected channel from current date and time onward
-    const displayEPG = (channelName) => {
-        epgContainer.innerHTML = '';
-        epgIndex = 0;
+// Function to display EPG for the selected channel from current date and time onward
+const displayEPG = (channelName) => {
+    epgContainer.innerHTML = '';
+    epgIndex = 0;
 
-        fetchEPG().then(xml => {
-            const programs = xml.querySelectorAll('programme');
-            const now = new Date();
-            epgData = Array.from(programs).filter(program => {
-                const start = parseEPGDate(program.getAttribute('start'));
-                return start >= now && program.getAttribute('channel') === channelName;
-            }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
-            loadMoreEPG();
-        });
-    };
+    fetchEPG().then(xml => {
+        const programs = xml.querySelectorAll('programme');
+        const now = new Date();
+        epgData = Array.from(programs).filter(program => {
+            const start = parseEPGDate(program.getAttribute('start'));
+            const stop = parseEPGDate(program.getAttribute('stop'));
+            return stop >= now && program.getAttribute('channel') === channelName;
+        }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
+        loadMoreEPG();
+    });
+};
 
     // Intersection observer for lazy loading EPG
     const observer = new IntersectionObserver(entries => {
