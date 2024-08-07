@@ -48,14 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 const loadMoreEPG = () => {
     const now = new Date();
 
-    // Function to convert to Malaysia time
-    const toMalaysiaTime = (date) => {
-        // Malaysia time is UTC+8
-        const malaysiaOffset = 8 * 60; // in minutes
-        const localTime = new Date(date.getTime() + (malaysiaOffset * 60000));
-        return localTime;
-    };
-
     const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
     nextBatch.forEach((program, index) => {
         try {
@@ -75,11 +67,7 @@ const loadMoreEPG = () => {
 
                 const epgTime = document.createElement('div');
                 epgTime.classList.add('epg-time');
-
-                const startMalaysiaTime = toMalaysiaTime(start);
-                const stopMalaysiaTime = toMalaysiaTime(stop);
-
-                epgTime.textContent = `${startMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stopMalaysiaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
                 epgItem.appendChild(epgTitle);
                 epgItem.appendChild(epgTime);
