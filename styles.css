@@ -1,20 +1,31 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Changed from height to min-height */
     background-color: #f0f0f0;
+    box-sizing: border-box; /* Ensure padding is included in height calculation */
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px; /* Reduce padding for smaller screens */
+    }
 }
 
 #main-container {
     display: flex;
+    flex-direction: row; /* Ensure row direction for large screens */
+    align-items: flex-start; /* Align items to the start */
     width: 90%;
     max-width: 1200px;
     margin: 20px auto;
+    margin-top: 20px; /* Ensure consistent spacing on top */
 }
 
 #player-container {
@@ -23,9 +34,10 @@ body {
     background-color: #000;
     border-radius: 10px;
     overflow: hidden;
-    position: relative; /* For floating effect */
-    top: -10px; /* Slightly lift the player */
-    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2); /* Add shadow for floating effect */
+    position: relative;
+    top: -10px;
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+    width: 100%; /* Make sure it takes full width on smaller screens */
 }
 
 #player {
@@ -41,8 +53,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 300px; /* Set a fixed width */
-    margin-left: 20px; /* Add space between player and EPG container */
+    width: 300px;
+    margin-left: 20px;
     margin-bottom: 10px;
 }
 
@@ -59,12 +71,12 @@ body {
 
 #epg-container {
     width: 100%;
-    height: 400px; /* Set a fixed height */
+    height: 400px;
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-y: auto;
 }
 
 .epg-item {
@@ -81,9 +93,7 @@ body {
     color: #888;
 }
 
-/* Highlight currently playing EPG item */
 .current-epg {
-    /* background-color: #d3f8d3;*/
     border-left: 5px solid #00b3ff;
 }
 
@@ -93,7 +103,6 @@ body {
     margin-top: 5px;
 }
 
-/* Style for "Coming Next" text */
 .coming-next {
     background-color: #f9f9f9;
     border-left: 5px solid #029bdd;
@@ -135,16 +144,16 @@ body {
 .card-slider {
     display: flex;
     overflow-x: auto;
-    overflow-y: hidden; /* Prevent vertical scrolling */
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     width: 100%;
     height: 10%;
-    min-height: 150px; /* Minimum height to show loading animation */
+    min-height: 150px;
 }
 
 .card {
-    position: relative; /* Add this to position the LIVE badge */
+    position: relative;
     flex: none;
     width: 200px;
     margin: 10px;
@@ -156,12 +165,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add transition effect */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .card:hover {
-    transform: translateY(-10px); /* Lift the card on hover */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Deepen shadow on hover */
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .card img {
@@ -176,15 +185,14 @@ body {
 .card-content {
     padding: 10px;
     text-align: center;
-    position: relative; /* Add this to position the LIVE badge */
-    width: 100%; /* Ensure the card content fills the card */
+    position: relative;
+    width: 100%;
 }
 
-/* New styles for LIVE text */
 .live-badge {
     position: absolute;
-    bottom: 10px; /* Adjust as needed */
-    right: 20px; /* Give it more space from the right side */
+    bottom: 10px;
+    right: 20px;
     background-color: red;
     color: white;
     padding: 2px 6px;
@@ -202,7 +210,7 @@ body {
     width: 30px;
     height: 100%;
     background: linear-gradient(to left, rgba(240, 240, 240, 1), rgba(240, 240, 240, 0));
-    pointer-events: none; /* Allow interactions through the fade effect */
+    pointer-events: none;
 }
 
 #spinner {
@@ -219,8 +227,8 @@ body {
 }
 
 .loading-spinner {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue */
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -232,7 +240,7 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* Media queries for mobile responsiveness */
+/* Media queries for responsiveness */
 @media (max-width: 1024px) {
     #main-container {
         flex-direction: column;
@@ -240,51 +248,33 @@ body {
     }
 
     #player-container {
-        flex: 4;
-        width: 100%;
         margin-right: 0;
         margin-bottom: 20px;
+        width: 100%; /* Ensure full width on smaller screens */
     }
-
+    
     #epg-wrapper {
-        width: 80%; /* Reduce width for smaller desktop screens */
-        margin-left: 0; /* Adjust margin */
-    }
-
-    #epg-container {
-        width: 100%;
-        height: 300px; /* Adjust height for smaller screens */
-    }
-
-    .card-slider-wrapper {
-        width: 100%;
-    }
-
-    #now-playing {
-        font-size: 12px;
-        padding: 4px;
-        width: 100%;
-    }
-
-    .current-epg {
-        background-color: #d3f8d3;
-        border-left: 5px solid #4caf50;
+        width: 100%; /* Ensure full width on smaller screens */
+        margin-left: 0; /* Remove left margin */
     }
 }
 
 @media (max-width: 768px) {
-    #epg-wrapper {
-        display: none; /* Hide the EPG on mobile */
-    }
-
-    #now-playing {
-        font-size: 10px;
-        padding: 3px;
+    #main-container {
         width: 100%;
+        margin: 10px auto; /* Adjust margins for smaller screens */
+        margin-top: 20px; /* Ensure consistent spacing on top */
     }
 
-    .current-epg {
-        background-color: #d3f8d3;
-        border-left: 5px solid #4caf50;
+    #player-container {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+        top: 0; /* Reset top positioning on smaller screens */
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Adjust shadow for smaller screens */
+    }
+
+    #epg-wrapper {
+        display: none; /* Hide the EPG container on smaller screens */
     }
 }
