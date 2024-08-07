@@ -354,3 +354,18 @@ body {
         transform: translateX(1);
     }
 }
+
+.epg-tooltip {
+    position: absolute;
+    bottom: 50px; /* Adjust the position as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+    pointer-events: none;
+    white-space: nowrap;
+}

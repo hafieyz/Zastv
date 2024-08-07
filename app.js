@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
     const channelNameElement = document.getElementById('channel-name');
+    const epgTooltip = document.getElementById('epg-tooltip'); // Tooltip element
 
     let epgData = [];
     let epgIndex = 0;
@@ -78,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         currentPlayingText.classList.add('current-playing-text');
                         currentPlayingText.textContent = 'Current Playing';
                         epgItem.prepend(currentPlayingText);
+
+                        // Update tooltip with current EPG show details
+                        epgTooltip.textContent = `${title} (${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
                     }
                 } else {
                     console.warn('Invalid start or stop time for program:', program);
@@ -144,83 +148,92 @@ document.addEventListener('DOMContentLoaded', () => {
                 spinner.style.display = 'none';
                 alert('Failed to load DASH stream.');
             });
-        } else if (type === 'm3u8' && typeof Hls !== 'undefined' && Hls.isSupported()) {
+        }else if (type === 'm3u8' && typeof Hls !== 'undefined' && Hls.isSupported()) {
             const hls = new Hls();
             hls.loadSource(url);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                spinner.style.display = 'none';
-                video.style.display = 'block';
-                video.play().catch(error => console.error('Error playing video:', error));
+            spinner.style.display = 'none';
+            video.style.display = 'block';
+            video.play().catch(error => console.error('Error playing video:', error));
             });
             hls.on(Hls.Events.ERROR, (event, data) => {
-                if (data.fatal) {
-                    console.error('Hls.js fatal error:', data);
-                    spinner.style.display = 'none';
-                    alert('Failed to load HLS stream.');
-                }
+            if (data.fatal) {
+            console.error('Hls.js fatal error:', data);
+            spinner.style.display = 'none';
+            alert('Failed to load HLS stream.');
+            }
             });
-        } else if (type === 'm3u8' && video.canPlayType('application/vnd.apple.mpegurl')) {
+            } else if (type === 'm3u8' && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = url;
             video.addEventListener('loadedmetadata', () => {
-                spinner.style.display = 'none';
-                video.style.display = 'block';
-                video.play().catch(error => console.error('Error playing video:', error));
+            spinner.style.display = 'none';
+            video.style.display = 'block';
+            video.play().catch(error => console.error('Error playing video:', error));
             });
             video.addEventListener('error', () => {
-                spinner.style.display = 'none';
-                alert('Failed to load HLS stream.');
+            spinner.style.display = 'none';
+            alert('Failed to load HLS stream.');
             });
-        } else {
+            } else {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
-        }
+            }
+                // Display the current channel name
+    channelNameElement.textContent = channelName;
 
-        // Display the current channel name
-        channelNameElement.textContent = channelName;
+    // Display EPG for the selected channel
+    displayEPG(channelName);
+};
 
-        // Display EPG for the selected channel
-        displayEPG(channelName);
-    };
-
-    // Function to create and add video cards
-    const createVideoCards = () => {
-        videoSources.forEach(source => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.innerHTML = `
-                <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-                <div class="card-content">
-                    <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
-                </div>
-            `;
-            card.addEventListener('click', () => {
-                initializePlayer(source.type, source.url, source.label);
-            });
-            videoCards.appendChild(card);
+// Function to create and add video cards
+const createVideoCards = () => {
+    videoSources.forEach(source => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.innerHTML = `
+            <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+            <div class="card-content">
+                <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
+            </div>
+        `;
+        card.addEventListener('click', () => {
+            initializePlayer(source.type, source.url, source.label);
         });
-    };
+        videoCards.appendChild(card);
+    });
+};
 
-    // Show loading animation
-    const showLoading = () => {
-        loadingContainer.style.display = 'flex';
-    };
+// Show loading animation
+const showLoading = () => {
+    loadingContainer.style.display = 'flex';
+};
 
-    // Hide loading animation
-    const hideLoading = () => {
-        loadingContainer.style.display = 'none';
-    };
+// Hide loading animation
+const hideLoading = () => {
+    loadingContainer.style.display = 'none';
+};
 
-    // Wait for videoSources to be populated
-    const waitForSources = () => {
-        if (videoSources.length > 2) {
-            hideLoading();
-            createVideoCards();
-        } else {
-            setTimeout(waitForSources, 500);
-        }
-    };
+// Wait for videoSources to be populated
+const waitForSources = () => {
+    if (videoSources.length > 2) {
+        hideLoading();
+        createVideoCards();
+    } else {
+        setTimeout(waitForSources, 500);
+    }
+};
 
-    showLoading();
-    waitForSources();
+showLoading();
+waitForSources();
+
+video.addEventListener('mouseenter', () => {
+    console.log('Mouse entered video');
+    epgTooltip.style.display = 'block';
+});
+
+video.addEventListener('mouseleave', () => {
+    console.log('Mouse left video');
+    epgTooltip.style.display = 'none';
+});
 });
