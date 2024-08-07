@@ -47,7 +47,7 @@ body {
 }
 
 #now-playing {
-    background-color: #88eae8;
+    background-color: #00b3ff;
     color: #fff;
     padding: 5px;
     text-align: center;
@@ -84,23 +84,23 @@ body {
 /* Highlight currently playing EPG item */
 .current-epg {
     /* background-color: #d3f8d3;*/
-    border-left: 5px solid #4caf50;
+    border-left: 5px solid #00b3ff;
 }
 
 .current-playing-text {
-    color: #4caf50;
+    color: #00b3ff;
     font-weight: bold;
     margin-top: 5px;
 }
 
 /* Style for "Coming Next" text */
 .coming-next {
-    /* background-color: #f9f9f9; */
-    border-left: 5px solid #f39c12;
+    background-color: #f9f9f9;
+    border-left: 5px solid #029bdd;
 }
 
 .coming-next-text {
-    color: #f39c12;
+    color: #029bdd;
     font-weight: bold;
     margin-top: 5px;
 }
@@ -233,7 +233,7 @@ body {
 }
 
 /* Media queries for mobile responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     #main-container {
         flex-direction: column;
         align-items: center;
@@ -247,11 +247,34 @@ body {
     }
 
     #epg-wrapper {
-        display: none; /* Hide the EPG on mobile */
+        width: 80%; /* Reduce width for smaller desktop screens */
+        margin-left: 0; /* Adjust margin */
+    }
+
+    #epg-container {
+        width: 100%;
+        height: 300px; /* Adjust height for smaller screens */
     }
 
     .card-slider-wrapper {
         width: 100%;
+    }
+
+    #now-playing {
+        font-size: 12px;
+        padding: 4px;
+        width: 100%;
+    }
+
+    .current-epg {
+        background-color: #d3f8d3;
+        border-left: 5px solid #4caf50;
+    }
+}
+
+@media (max-width: 768px) {
+    #epg-wrapper {
+        display: none; /* Hide the EPG on mobile */
     }
 
     #now-playing {
