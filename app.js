@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const spinner = document.getElementById('spinner');
     const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
-    const channelNameElement = document.getElementById('channel-name'); // New element for channel name
+    const channelNameElement = document.getElementById('channel-name');
 
     let epgData = [];
     let epgIndex = 0;
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         settings: ['captions', 'quality', 'speed', 'loop'],
         fullscreen: { enabled: true, fallback: true, iosNative: true }
     });
-
 
     // Function to parse EPG date string
     const parseEPGDate = (dateString) => {
@@ -44,82 +43,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-// Function to load more EPG data
-const loadMoreEPG = () => {
-    const now = new Date();
-
-    const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
-    nextBatch.forEach((program, index) => {
-        try {
-            const title = program.querySelector('title')?.textContent || 'No Title';
-            const startAttr = program.getAttribute('start');
-            const stopAttr = program.getAttribute('stop');
-            const start = parseEPGDate(startAttr);
-            const stop = parseEPGDate(stopAttr);
-
-            if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && stop >= now) {
-                const epgItem = document.createElement('div');
-                epgItem.classList.add('epg-item');
-
-                const epgTitle = document.createElement('div');
-                epgTitle.classList.add('epg-title');
-                epgTitle.textContent = title;
-
-                const epgTime = document.createElement('div');
-                epgTime.classList.add('epg-time');
-                epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-
-                epgItem.appendChild(epgTitle);
-                epgItem.appendChild(epgTime);
-                epgContainer.appendChild(epgItem);
-
-                if (index === 0) {
-                    const currentPlayingText = document.createElement('div');
-                    currentPlayingText.classList.add('current-playing-text');
-                    currentPlayingText.textContent = 'Current Playing';
-                    epgItem.prepend(currentPlayingText);
-                    epgItem.classList.add('current-epg');
-                } else if (index === 1) {
-                    const comingNextText = document.createElement('div');
-                    comingNextText.classList.add('coming-next-text');
-                    comingNextText.textContent = 'Coming Next';
-                    epgItem.prepend(comingNextText);
-                    epgItem.classList.add('coming-next');
-                }
-
-                if (now >= start && now <= stop) {
-                    epgItem.classList.add('current-epg');
-                }
-            } else {
-                console.warn('Invalid start or stop time for program:', program);
-                console.log('Raw start attribute:', startAttr);
-                console.log('Raw stop attribute:', stopAttr);
-                console.log('Parsed start time:', start);
-                console.log('Parsed stop time:', stop);
-            }
-        } catch (error) {
-            console.error('Error processing EPG program:', program, error);
-        }
-    });
-    epgIndex += epgBatchSize;
-};
-
-// Function to display EPG for the selected channel from current date and time onward
-const displayEPG = (channelName) => {
-    epgContainer.innerHTML = '';
-    epgIndex = 0;
-
-    fetchEPG().then(xml => {
-        const programs = xml.querySelectorAll('programme');
+    // Function to load more EPG data
+    const loadMoreEPG = () => {
         const now = new Date();
-        epgData = Array.from(programs).filter(program => {
-            const start = parseEPGDate(program.getAttribute('start'));
-            const stop = parseEPGDate(program.getAttribute('stop'));
-            return stop >= now && program.getAttribute('channel') === channelName;
-        }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
-        loadMoreEPG();
-    });
-};
+
+        const nextBatch = epgData.slice(epgIndex, epgIndex + epgBatchSize);
+        nextBatch.forEach((program) => {
+            try {
+                const title = program.querySelector('title')?.textContent || 'No Title';
+                const startAttr = program.getAttribute('start');
+                const stopAttr = program.getAttribute('stop');
+                const start = parseEPGDate(startAttr);
+                const stop = parseEPGDate(stopAttr);
+
+                if (!isNaN(start.getTime()) && !isNaN(stop.getTime()) && stop >= now) {
+                    const epgItem = document.createElement('div');
+                    epgItem.classList.add('epg-item');
+
+                    const epgTitle = document.createElement('div');
+                    epgTitle.classList.add('epg-title');
+                    epgTitle.textContent = title;
+
+                    const epgTime = document.createElement('div');
+                    epgTime.classList.add('epg-time');
+                    epgTime.textContent = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${stop.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+                    epgItem.appendChild(epgTitle);
+                    epgItem.appendChild(epgTime);
+                    epgContainer.appendChild(epgItem);
+
+                    if (now >= start && now <= stop) {
+                        epgItem.classList.add('current-epg');
+                        const currentPlayingText = document.createElement('div');
+                        currentPlayingText.classList.add('current-playing-text');
+                        currentPlayingText.textContent = 'Current Playing';
+                        epgItem.prepend(currentPlayingText);
+                    }
+                } else {
+                    console.warn('Invalid start or stop time for program:', program);
+                    console.log('Raw start attribute:', startAttr);
+                    console.log('Raw stop attribute:', stopAttr);
+                    console.log('Parsed start time:', start);
+                    console.log('Parsed stop time:', stop);
+                }
+            } catch (error) {
+                console.error('Error processing EPG program:', program, error);
+            }
+        });
+        epgIndex += epgBatchSize;
+    };
+
+    // Function to display EPG for the selected channel from current date and time onward
+    const displayEPG = (channelName) => {
+        epgContainer.innerHTML = '';
+        epgIndex = 0;
+
+        fetchEPG().then(xml => {
+            const programs = xml.querySelectorAll('programme');
+            const now = new Date();
+            epgData = Array.from(programs).filter(program => {
+                const start = parseEPGDate(program.getAttribute('start'));
+                const stop = parseEPGDate(program.getAttribute('stop'));
+                return stop >= now && program.getAttribute('channel') === channelName;
+            }).sort((a, b) => parseEPGDate(a.getAttribute('start')) - parseEPGDate(b.getAttribute('start')));
+            loadMoreEPG();
+        });
+    };
 
     // Intersection observer for lazy loading EPG
     const observer = new IntersectionObserver(entries => {
@@ -127,20 +116,21 @@ const displayEPG = (channelName) => {
             loadMoreEPG();
         }
     }, {
-        root: epgContainer,    threshold: 1.0
+        root: epgContainer,
+        threshold: 1.0
     });
-    
+
     const sentinel = document.createElement('div');
     sentinel.style.height = '1px';
     sentinel.style.width = '100%';
     epgContainer.appendChild(sentinel);
     observer.observe(sentinel);
-    
+
     // Initialize player and display EPG for the selected channel
     const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
-    
+
         if (type === 'mpd' && typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, url, true);
@@ -185,14 +175,14 @@ const displayEPG = (channelName) => {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
         }
-    
+
         // Display the current channel name
         channelNameElement.textContent = channelName;
-    
+
         // Display EPG for the selected channel
         displayEPG(channelName);
     };
-    
+
     // Function to create and add video cards
     const createVideoCards = () => {
         videoSources.forEach(source => {
@@ -210,17 +200,17 @@ const displayEPG = (channelName) => {
             videoCards.appendChild(card);
         });
     };
-    
+
     // Show loading animation
     const showLoading = () => {
         loadingContainer.style.display = 'flex';
     };
-    
+
     // Hide loading animation
     const hideLoading = () => {
         loadingContainer.style.display = 'none';
     };
-    
+
     // Wait for videoSources to be populated
     const waitForSources = () => {
         if (videoSources.length > 2) {
@@ -230,10 +220,7 @@ const displayEPG = (channelName) => {
             setTimeout(waitForSources, 500);
         }
     };
-    
+
     showLoading();
     waitForSources();
-    
-    
-
 });
