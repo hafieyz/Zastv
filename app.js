@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let epgData = [];
     let epgIndex = 0;
-    const epgBatchSize = 15;
+    const epgBatchSize = 10;
 
     const player = new Plyr(video, {
         controls: [

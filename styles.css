@@ -6,38 +6,36 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Changed from height to min-height */
+    min-height: 100vh;
     background-color: #f0f0f0;
-    box-sizing: border-box; /* Ensure padding is included in height calculation */
+    box-sizing: border-box;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     body {
-        padding: 10px; /* Reduce padding for smaller screens */
+        padding: 10px;
     }
 }
 
 #main-container {
     display: flex;
-    flex-direction: row; /* Ensure row direction for large screens */
-    align-items: flex-start; /* Align items to the start */
+    flex-direction: column; /* Stack items in a column by default */
+    align-items: center;
     width: 90%;
     max-width: 1200px;
     margin: 20px auto;
-    margin-top: 20px; /* Ensure consistent spacing on top */
 }
 
 #player-container {
     flex: 4;
-    margin-right: 20px;
     background-color: #000;
     border-radius: 10px;
     overflow: hidden;
     position: relative;
     top: -10px;
     box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
-    width: 100%; /* Make sure it takes full width on smaller screens */
+    width: 100%;
+    margin-bottom: 20px; /* Add margin to separate from EPG */
 }
 
 #player {
@@ -53,9 +51,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 300px;
-    margin-left: 20px;
-    margin-bottom: 10px;
+    width: auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    overflow-y: auto;
 }
 
 #now-playing {
@@ -71,11 +72,7 @@ body {
 
 #epg-container {
     width: 100%;
-    height: 400px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -241,20 +238,20 @@ body {
 }
 
 /* Media queries for responsiveness */
-@media (max-width: 1024px) {
+@media (min-width: 769px) {
     #main-container {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row; /* Side by side on larger screens */
     }
 
     #player-container {
-        margin-right: 0;
-        margin-bottom: 20px;
-        width: 100%; /* Ensure full width on smaller screens */
+        flex: 4;
+        margin-right: 20px;
+        margin-bottom: 0; /* Remove bottom margin when side by side */
     }
-    
+
     #epg-wrapper {
-        width: 100%; /* Ensure full width on smaller screens */
+        flex: 1;
+        width: auto; /* Reset width to auto for side by side */
         margin-left: 0; /* Remove left margin */
     }
 }
@@ -262,19 +259,28 @@ body {
 @media (max-width: 768px) {
     #main-container {
         width: 100%;
-        margin: 10px auto; /* Adjust margins for smaller screens */
-        margin-top: 20px; /* Ensure consistent spacing on top */
+        margin: 10px auto;
+        margin-top: 20px;
     }
 
     #player-container {
         width: 100%;
         margin-right: 0;
-        margin-bottom: 10px;
-        top: 0; /* Reset top positioning on smaller screens */
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Adjust shadow for smaller screens */
+        margin-bottom: 20px;
+        top: 0;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
     }
 
     #epg-wrapper {
-        display: none; /* Hide the EPG container on smaller screens */
+        width: 100%;
+        margin-left: 0;
+        display: flex; /* Ensure EPG is displayed below player */
+    }
+}
+
+/* Media query to hide EPG container on very small screens */
+@media (max-width: 480px) {
+    #epg-wrapper {
+        display: none;
     }
 }
