@@ -3,7 +3,11 @@ let videoSources = [];
 
 // URLs of M3U playlists
 const m3uUrls = [
-    'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8'
+    //'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8',
+    //'https://github.com/imanawesome2010/sooka/blob/main/sooka.m3u'
+    //'https://d25tgymtnqzu8s.cloudfront.net/smil:tv1/manifest.mpd'
+    //'https://iptv-org.github.io/iptv/countries/my.m3u'
+    'https://raw.githubusercontent.com/hafieyz/Zastv/main/source.m3u8?token=GHSAT0AAAAAACVEUCVVNKEIG7OQ5MPLUM3WZVUYWSA'
 ];
 
 // Function to check if the channel is online
