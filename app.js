@@ -135,46 +135,37 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = 'block';
         video.style.display = 'none';
 
+        const onPlayerError = (error) => {
+            console.error('Player error:', error);
+            spinner.style.display = 'none';
+            alert(`Failed to load ${type.toUpperCase()} stream.`);
+        };
+
+        const onPlayerSuccess = () => {
+            spinner.style.display = 'none';
+            video.style.display = 'block';
+            video.play().catch(error => console.error('Error playing video:', error));
+        };
+
         if (type === 'mpd' && typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, url, true);
-            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
-                spinner.style.display = 'none';
-                video.style.display = 'block';
-                video.play().catch(error => console.error('Error playing video:', error));
-            });
-            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, (e) => {
-                console.error('Dash.js error:', e);
-                spinner.style.display = 'none';
-                alert('Failed to load DASH stream.');
-            });
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onPlayerSuccess);
+            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
         } else if (type === 'm3u8' && typeof Hls !== 'undefined' && Hls.isSupported()) {
             const hls = new Hls();
             hls.loadSource(url);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                spinner.style.display = 'none';
-                video.style.display = 'block';
-                video.play().catch(error => console.error('Error playing video:', error));
-            });
+            hls.on(Hls.Events.MANIFEST_PARSED, onPlayerSuccess);
             hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
-                    console.error('Hls.js fatal error:', data);
-                    spinner.style.display = 'none';
-                    alert('Failed to load HLS stream.');
+                    onPlayerError(data);
                 }
             });
         } else if (type === 'm3u8' && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = url;
-            video.addEventListener('loadedmetadata', () => {
-                spinner.style.display = 'none';
-                video.style.display = 'block';
-                video.play().catch(error => console.error('Error playing video:', error));
-            });
-            video.addEventListener('error', () => {
-                spinner.style.display = 'none';
-                alert('Failed to load HLS stream.');
-            });
+            video.addEventListener('loadedmetadata', onPlayerSuccess);
+            video.addEventListener('error', onPlayerError);
         } else {
             spinner.style.display = 'none';
             alert('No supported stream type found.');
@@ -193,35 +184,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('card');
             card.innerHTML = `
-            <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+             <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
             <div class="card-content">
                 <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
             </div>
         `;
-            card.addEventListener('click', () => {
-            initializePlayer(source.type, source.url, source.label);
-            });
-            videoCards.appendChild(card);
-            });
-            };
-            // Show loading animation
+card.addEventListener('click', () => {
+initializePlayer(source.type, source.url, source.label);
+});
+videoCards.appendChild(card);
+});
+};
+// Show loading animation
 const showLoading = () => {
-    loadingContainer.style.display = 'flex';
+loadingContainer.style.display = 'flex';
 };
 
 // Hide loading animation
 const hideLoading = () => {
-    loadingContainer.style.display = 'none';
+loadingContainer.style.display = 'none';
 };
 
 // Wait for videoSources to be populated
 const waitForSources = () => {
-    if (videoSources.length > 2) {
-        hideLoading();
-        createVideoCards();
-    } else {
-        setTimeout(waitForSources, 500);
-    }
+if (videoSources.length > 2) {
+hideLoading();
+createVideoCards();
+} else {
+setTimeout(waitForSources, 500);
+}
 };
 
 showLoading();
@@ -229,10 +220,10 @@ waitForSources();
 
 // Event listeners to show/hide the tooltip
 video.addEventListener('mouseenter', () => {
-    epgTooltip.style.display = 'block';
+epgTooltip.style.display = 'block';
 });
 
 video.addEventListener('mouseleave', () => {
-    epgTooltip.style.display = 'none';
+epgTooltip.style.display = 'none';
 });
 });
