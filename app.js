@@ -184,25 +184,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('card');
             card.innerHTML = `
-             <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+            <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
             <div class="card-content">
                 <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
             </div>
         `;
-card.addEventListener('click', () => {
-initializePlayer(source.type, source.url, source.label);
-});
-videoCards.appendChild(card);
-});
-};
-// Show loading animation
+            card.addEventListener('click', () => {
+            initializePlayer(source.type, source.url, source.label);
+            });
+            videoCards.appendChild(card);
+            });
+            };
+            // Show loading animation
 const showLoading = () => {
-loadingContainer.style.display = 'flex';
+    loadingContainer.style.display = 'flex';
 };
 
 // Hide loading animation
 const hideLoading = () => {
-loadingContainer.style.display = 'none';
+    loadingContainer.style.display = 'none';
 };
 
 // Wait for videoSources to be populated
