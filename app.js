@@ -134,46 +134,92 @@ document.addEventListener('DOMContentLoaded', () => {
     const initializePlayer = (type, url, channelName) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
-
-        const onPlayerError = (error) => {
+    
+        const handlePlayerError = (error) => {
             console.error('Player error:', error);
             spinner.style.display = 'none';
             alert(`Failed to load ${type.toUpperCase()} stream.`);
         };
-
-        const onPlayerSuccess = () => {
+    
+        const handlePlayerSuccess = () => {
             spinner.style.display = 'none';
             video.style.display = 'block';
             video.play().catch(error => console.error('Error playing video:', error));
         };
-
-        if (type === 'mpd' && typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
+    
+        const initializeDashPlayer = () => {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, url, true);
-            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onPlayerSuccess);
-            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
-        } else if (type === 'm3u8' && typeof Hls !== 'undefined' && Hls.isSupported()) {
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
+            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
+        };
+    
+        const initializeHlsPlayer = () => {
             const hls = new Hls();
             hls.loadSource(url);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, onPlayerSuccess);
+            hls.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
             hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
-                    onPlayerError(data);
+                    switch(data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            console.error('Network error:', data);
+                            alert('Network error occurred. Please check your connection.');
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.error('Media error:', data);
+                            if (data.details === 'bufferAppendError') {
+                                console.error('Buffer append error:', data);
+                                alert('Buffer append error occurred. Attempting to recover.');
+                                hls.recoverMediaError();
+                            }
+                            break;
+                        default:
+                            handlePlayerError(data);
+                            break;
+                    }
                 }
             });
-        } else if (type === 'm3u8' && video.canPlayType('application/vnd.apple.mpegurl')) {
+        };
+    
+        const initializeNativePlayer = (type) => {
             video.src = url;
-            video.addEventListener('loadedmetadata', onPlayerSuccess);
-            video.addEventListener('error', onPlayerError);
-        } else {
-            spinner.style.display = 'none';
-            alert('No supported stream type found.');
+            video.addEventListener('loadedmetadata', handlePlayerSuccess);
+            video.addEventListener('error', handlePlayerError);
+        };
+    
+        switch (type) {
+            case 'mpd':
+                if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
+                    initializeDashPlayer();
+                } else {
+                    handlePlayerError(new Error('DASH.js not available.'));
+                }
+                break;
+            case 'm3u8':
+                if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                    initializeHlsPlayer();
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    initializeNativePlayer('application/vnd.apple.mpegurl');
+                } else {
+                    handlePlayerError(new Error('No supported player for HLS.'));
+                }
+                break;
+            case 'aac':
+                if (video.canPlayType('audio/aac')) {
+                    initializeNativePlayer('audio/aac');
+                } else {
+                    handlePlayerError(new Error('AAC not supported.'));
+                }
+                break;
+            default:
+                handlePlayerError(new Error('Unsupported stream type.'));
+                break;
         }
-
+    
         // Display the current channel name
         channelNameElement.textContent = channelName;
-
+    
         // Display EPG for the selected channel
         displayEPG(channelName);
     };
