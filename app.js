@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
-    const videoCards = document.getElementById('videoCards');
     const spinner = document.getElementById('spinner');
-    const loadingContainer = document.getElementById('loadingContainer');
     const epgContainer = document.getElementById('epg-container');
     const channelNameElement = document.getElementById('channel-name');
     const epgTooltip = document.getElementById('epg-tooltip'); // Tooltip element
@@ -181,95 +179,128 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         };
-    
-        const initializeNativePlayer = (type) => {
-            video.src = url;
-            video.addEventListener('loadedmetadata', handlePlayerSuccess);
-            video.addEventListener('error', handlePlayerError);
-        };
-    
-        switch (type) {
-            case 'mpd':
-                if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
-                    initializeDashPlayer();
-                } else {
-                    handlePlayerError(new Error('DASH.js not available.'));
-                }
-                break;
-            case 'm3u8':
-                if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                    initializeHlsPlayer();
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    initializeNativePlayer('application/vnd.apple.mpegurl');
-                } else {
-                    handlePlayerError(new Error('No supported player for HLS.'));
-                }
-                break;
-            case 'aac':
-                if (video.canPlayType('audio/aac')) {
-                    initializeNativePlayer('audio/aac');
-                } else {
-                    handlePlayerError(new Error('AAC not supported.'));
-                }
-                break;
-            default:
-                handlePlayerError(new Error('Unsupported stream type.'));
-                break;
-        }
-    
-        // Display the current channel name
-        channelNameElement.textContent = channelName;
-    
-        // Display EPG for the selected channel
-        displayEPG(channelName);
-    };
-
-    // Function to create and add video cards
-    const createVideoCards = () => {
-        videoSources.forEach(source => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.innerHTML = `
-            <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
-            <div class="card-content">
-                <div class="live-badge">LIVE</div> <!-- Add this line for the LIVE badge -->
-            </div>
-        `;
-            card.addEventListener('click', () => {
-            initializePlayer(source.type, source.url, source.label);
-            });
-            videoCards.appendChild(card);
-            });
+            const initializeNativePlayer = (type) => {
+                video.src = url;
+                video.addEventListener('loadedmetadata', handlePlayerSuccess);
+                video.addEventListener('error', handlePlayerError);
             };
-            // Show loading animation
-const showLoading = () => {
-    loadingContainer.style.display = 'flex';
-};
-
-// Hide loading animation
-const hideLoading = () => {
-    loadingContainer.style.display = 'none';
-};
-
-// Wait for videoSources to be populated
-const waitForSources = () => {
-if (videoSources.length > 2) {
-hideLoading();
-createVideoCards();
-} else {
-setTimeout(waitForSources, 500);
-}
-};
-
-showLoading();
-waitForSources();
-
-// Event listeners to show/hide the tooltip
-video.addEventListener('mouseenter', () => {
-epgTooltip.style.display = 'block';
-});
-
-video.addEventListener('mouseleave', () => {
-epgTooltip.style.display = 'none';
-});
-});
+        
+            switch (type) {
+                case 'mpd':
+                    if (typeof dashjs !== 'undefined' && dashjs.MediaPlayer) {
+                        initializeDashPlayer();
+                    } else {
+                        handlePlayerError(new Error('DASH.js not available.'));
+                    }
+                    break;
+                case 'm3u8':
+                    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                        initializeHlsPlayer();
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        initializeNativePlayer('application/vnd.apple.mpegurl');
+                    } else {
+                        handlePlayerError(new Error('No supported player for HLS.'));
+                    }
+                    break;
+                case 'aac':
+                    if (video.canPlayType('audio/aac')) {
+                        initializeNativePlayer('audio/aac');
+                    } else {
+                        handlePlayerError(new Error('AAC not supported.'));
+                    }
+                    break;
+                default:
+                    handlePlayerError(new Error('Unsupported stream type.'));
+                    break;
+            }
+        
+            // Display the current channel name
+            channelNameElement.textContent = channelName;
+        
+            // Display EPG for the selected channel
+            displayEPG(channelName);
+        };
+        
+        // Function to create and add video cards
+        const createVideoCards = () => {
+            const sourceGroups = videoSources.reduce((groups, source) => {
+                if (!groups[source.sourceId]) {
+                    groups[source.sourceId] = [];
+                }
+                groups[source.sourceId].push(source);
+                return groups;
+            }, {});
+        
+            Object.keys(sourceGroups).forEach(sourceId => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('card-slider-wrapper');
+        
+                const header = document.createElement('div');
+                header.classList.add('card-slider-header');
+        
+                const title = document.createElement('div');
+                title.classList.add('card-slider-title');
+                title.textContent = `${sourceId}`;
+        
+                header.appendChild(title);
+                wrapper.appendChild(header);
+        
+                const container = document.createElement('div');
+                container.classList.add('card-slider-container');
+        
+                const slider = document.createElement('div');
+                slider.classList.add('card-slider');
+        
+                sourceGroups[sourceId].forEach(source => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    card.innerHTML = `
+                        <img src="${source.logo || 'thumbnail.jpg'}" alt="${source.label}" />
+                        <div class="card-content">
+                            <div class="live-badge">LIVE</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        initializePlayer(source.type, source.url, source.label);
+                    });
+                    slider.appendChild(card);
+                });
+        
+                container.appendChild(slider);
+                wrapper.appendChild(container);
+                document.getElementById('sliders-container').appendChild(wrapper);
+            });
+        };
+        
+        // Show loading animation
+        const showLoading = () => {
+            spinner.style.display = 'block';
+        };
+        
+        // Hide loading animation
+        const hideLoading = () => {
+            spinner.style.display = 'none';
+        };
+        
+        // Wait for videoSources to be populated
+        const waitForSources = () => {
+            if (videoSources.length > 2) {
+                hideLoading();
+                createVideoCards();
+            } else {
+                setTimeout(waitForSources, 500);
+            }
+        };
+        
+        showLoading();
+        waitForSources();
+        
+        // Event listeners to show/hide the tooltip
+        video.addEventListener('mouseenter', () => {
+            epgTooltip.style.display = 'block';
+        });
+        
+        video.addEventListener('mouseleave', () => {
+            epgTooltip.style.display = 'none';
+        });
+    });

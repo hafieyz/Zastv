@@ -1,15 +1,16 @@
 // Container for video sources
 let videoSources = [];
 
-// URLs of M3U playlists
+// URLs of M3U playlists with identifiers
 const m3uUrls = [
-    'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8',
+    { id: 'MyFreeview', url: 'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8' },
+    //{ id: 'ZAST', url: 'https://raw.githubusercontent.com/hafieyz/Zastv/main/source.m3u8?token=GHSAT0AAAAAACVEUCVU5PUSTYAJ4JOSHS3QZVU4WUQ' }
+    // Add more sources here with unique IDs
     //'https://github.com/imanawesome2010/sooka/blob/main/sooka.m3u'
     //'https://d25tgymtnqzu8s.cloudfront.net/smil:tv1/manifest.mpd'
     //'https://iptv-org.github.io/iptv/countries/my.m3u'
     //'https://raw.githubusercontent.com/hafieyz/Zastv/main/source.m3u8?token=GHSAT0AAAAAACVEUCVVNKEIG7OQ5MPLUM3WZVUYWSA'
 ];
-
 // Function to check if the channel is online
 const isChannelOnline = async (url) => {
     try {
@@ -22,10 +23,11 @@ const isChannelOnline = async (url) => {
 };
 
 // Function to fetch and process M3U channels
-const fetchM3UChannels = async (m3uUrl) => {
+const fetchM3UChannels = async (m3uSource) => {
+    const { id, url } = m3uSource;
     try {
-        console.log(`Fetching M3U playlist from ${m3uUrl}`);
-        const response = await fetch(m3uUrl);
+        console.log(`Fetching M3U playlist from ${url}`);
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch the playlist.');
         const data = await response.text();
 
@@ -40,7 +42,7 @@ const fetchM3UChannels = async (m3uUrl) => {
         const results = await Promise.all(urls.map((url, index) => {
             return isChannelOnline(url).then(isOnline => {
                 if (isOnline) {
-                    return { label: names[index], type: 'm3u8', url: url, logo: logos[index] || 'thumbnail.jpg' };
+                    return { label: names[index], type: 'm3u8', url: url, logo: logos[index] || 'thumbnail.jpg', sourceId: id };
                 }
                 return null;
             }).catch(error => {
@@ -53,14 +55,14 @@ const fetchM3UChannels = async (m3uUrl) => {
         videoSources = videoSources.concat(results.filter(source => source !== null));
         console.log(`${videoSources.length} channels are currently online and have been added to the sources.`);
     } catch (error) {
-        console.error(`Error fetching M3U playlist from ${m3uUrl}:`, error);
+        console.error(`Error fetching M3U playlist from ${url}:`, error);
     }
 };
 
 // Function to initialize fetching channels
 const initializeChannelFetching = () => {
     console.log('Starting to fetch channels from M3U URLs...');
-    m3uUrls.forEach(url => fetchM3UChannels(url));
+    m3uUrls.forEach(m3uSource => fetchM3UChannels(m3uSource));
 };
 
 // Start the process
