@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const initializeDashPlayer = () => {
             const dashPlayer = dashjs.MediaPlayer().create();
             dashPlayer.initialize(video, url, true);
+            dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
+            dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
             dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
             dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
             dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
@@ -145,6 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const initializeHlsPlayer = () => {
             const hls = new Hls();
             hls.loadSource(url);
+            hls.config.maxBufferLength = 120; // Max buffer length in seconds
+            hls.config.maxMaxBufferLength = 240; // Max max buffer length in seconds
+            hls.config.lowBufferWatchdogPeriod = 0.5; // Low buffer watchdog period
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
             hls.on(Hls.Events.BUFFER_STALLED, handleBuffering);
@@ -161,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const initializeNativePlayer = (mimeType) => {
             video.src = url;
+            video.preload = 'auto'; // Preload video for smoother playback
             video.addEventListener('loadedmetadata', handlePlayerSuccess);
             video.addEventListener('waiting', handleBuffering);
             video.addEventListener('playing', handleBufferingEnd);
