@@ -1,11 +1,10 @@
-//this is app.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const spinner = document.getElementById('spinner');
     const epgContainer = document.getElementById('epg-container');
     const channelNameElement = document.getElementById('channel-name');
     const epgTooltip = document.getElementById('epg-tooltip');
+    const channelIconElement = document.getElementById('channel-icon');
 
     let epgData = [];
     let epgIndex = 0;
@@ -109,9 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const initializePlayer = (url, channelName) => {
+    const initializePlayer = (url, channelName, channelIcon) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
+
+        // Clear the channel icon regardless of the stream type
+        channelIconElement.style.display = 'none';
+        channelIconElement.src = ''; // Clear the previous icon's source
 
         // Clean up existing players or processes
         if (video.dashPlayer) {
@@ -123,8 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             video.hlsPlayer.destroy();
             video.hlsPlayer = null;
         }
-        
-        //video.src = ''; // Clear the current video source
+
         video.load(); // Reset the video element
 
         const handlePlayerError = (error) => {
@@ -133,10 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Failed to load stream.`);
         };
 
-        const handlePlayerSuccess = () => {
+        const handlePlayerSuccess = (isAudioOnly = false) => {
             spinner.style.display = 'none';
             video.style.display = 'block';
             video.play().catch(error => console.error('Error playing video:', error));
+
+            if (isAudioOnly) {
+                channelIconElement.src = channelIcon;
+                channelIconElement.style.display = 'block';
+            }
         };
 
         const handleBuffering = () => {
@@ -152,26 +159,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const initializeDashPlayer = () => {
             video.dashPlayer = dashjs.MediaPlayer().create();
             video.dashPlayer.initialize(video, url, true);
-            //video.dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
-            //video.dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
-            // Updated settings for buffering and latency control
             video.dashPlayer.updateSettings({
                 streaming: {
                     buffer: {
-                        // Buffer time in seconds (adjust as needed)
-                        bufferTimeAtTopQualityLongForm: 30, // Use this if it's supported
                         stableBufferTime: 20,
-                        bufferPruningInterval: 30, // How often buffer pruning happens
-                        bufferToKeep: 60, // Amount of buffer to keep
-                        fastSwitchEnabled: true // Enable fast switch for quick quality changes
                     },
-                    lowLatencyEnabled: true, // Enable low latency mode
+                    lowLatencyEnabled: true,
                     delay: {
-                        liveDelay: 2 // Lower delay for live streams
+                        liveDelay: 2
                     }
                 }
             });
-            video.dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => handlePlayerSuccess(false));
             video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
             video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
             video.dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
@@ -180,11 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const initializeHlsPlayer = () => {
             video.hlsPlayer = new Hls();
             video.hlsPlayer.loadSource(url);
-            video.hlsPlayer.config.maxBufferLength = 120; // Max buffer length in seconds
-            video.hlsPlayer.config.maxMaxBufferLength = 240; // Max max buffer length in seconds
-            video.hlsPlayer.config.lowBufferWatchdogPeriod = 0.5; // Low buffer watchdog period
+            video.hlsPlayer.config.maxBufferLength = 120;
+            video.hlsPlayer.config.maxMaxBufferLength = 240;
             video.hlsPlayer.attachMedia(video);
-            video.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
+            video.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => handlePlayerSuccess(false));
             video.hlsPlayer.on(Hls.Events.BUFFER_STALLED, handleBuffering);
             video.hlsPlayer.on(Hls.Events.BUFFER_APPENDING, handleBufferingEnd);
             video.hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
@@ -199,14 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const initializeNativePlayer = (mimeType) => {
             video.src = url;
-            video.preload = 'auto'; // Preload video for smoother playback
-            video.addEventListener('loadedmetadata', handlePlayerSuccess);
+            video.preload = 'auto';
+            video.addEventListener('loadedmetadata', () => handlePlayerSuccess(mimeType === 'audio/aac'));
             video.addEventListener('waiting', handleBuffering);
             video.addEventListener('playing', handleBufferingEnd);
             video.addEventListener('error', handlePlayerError);
         };
 
-        // Determine the type of the stream based on the file extension
         const fileExtension = url.split('.').pop();
 
         switch (fileExtension) {
@@ -277,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="live-badge">LIVE</div>
                     </div>
                 `;
-                card.addEventListener('click', () => initializePlayer(source.url, source.label));
+                card.addEventListener('click', () => initializePlayer(source.url, source.label, source.logo));
                 slider.appendChild(card);
             });
 
