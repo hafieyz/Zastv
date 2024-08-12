@@ -1,3 +1,5 @@
+//this is app.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('player');
     const spinner = document.getElementById('spinner');
@@ -150,8 +152,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const initializeDashPlayer = () => {
             video.dashPlayer = dashjs.MediaPlayer().create();
             video.dashPlayer.initialize(video, url, true);
-            video.dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
-            video.dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
+            //video.dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
+            //video.dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
+            // Updated settings for buffering and latency control
+            video.dashPlayer.updateSettings({
+                streaming: {
+                    buffer: {
+                        // Buffer time in seconds (adjust as needed)
+                        bufferTimeAtTopQualityLongForm: 30, // Use this if it's supported
+                        stableBufferTime: 20,
+                        bufferPruningInterval: 30, // How often buffer pruning happens
+                        bufferToKeep: 60, // Amount of buffer to keep
+                        fastSwitchEnabled: true // Enable fast switch for quick quality changes
+                    },
+                    lowLatencyEnabled: true, // Enable low latency mode
+                    delay: {
+                        liveDelay: 2 // Lower delay for live streams
+                    }
+                }
+            });
             video.dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
             video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
             video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
