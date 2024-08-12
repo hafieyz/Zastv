@@ -362,3 +362,29 @@ z-index: 1000;
 pointer-events: none;
 white-space: nowrap;
 }
+
+#channel-icon-container {
+    position: absolute;  /* Position it within the player container */
+    top: 50%;            /* Move it to the vertical center */
+    left: 50%;           /* Move it to the horizontal center */
+    transform: translate(-50%, -50%);  /* Adjust position to truly center the element */
+    z-index: 1000;       /* Ensure it appears above other elements */
+    pointer-events: none; /* Prevents interaction with the icon */
+}
+
+/* Style the audio (radio) icon */
+#channel-icon {
+    width: 50px;       /* Set the width of the icon */
+    height: 50px;      /* Set the height of the icon */
+    display: block;    /* Ensure it's displayed as a block element */
+    border-radius: 50%; /* Make the icon circular */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Add a subtle shadow */
+    border: 2px solid white; /* Add a white border around the icon */
+    background-color: rgba(0, 0, 0, 0.5); /* Optional background color for contrast */
+}
+
+/* Example hover effect if you want to allow interaction */
+#channel-icon-container:hover #channel-icon {
+    transform: scale(1.1); /* Slightly enlarge the icon on hover */
+    transition: transform 0.3s ease-in-out;
+}
