@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const epgContainer = document.getElementById('epg-container');
     const channelNameElement = document.getElementById('channel-name');
     const epgTooltip = document.getElementById('epg-tooltip');
+    const channelIconElement = document.getElementById('channel-icon');
 
     let epgData = [];
     let epgIndex = 0;
@@ -107,9 +108,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const initializePlayer = (url, channelName) => {
+    const initializePlayer = (url, channelName, channelIcon) => {
         spinner.style.display = 'block';
         video.style.display = 'none';
+
+        // Clear the channel icon regardless of the stream type
+        channelIconElement.style.display = 'none';
+        channelIconElement.src = ''; // Clear the previous icon's source
+
+        // Clean up existing players or processes
+        if (video.dashPlayer) {
+            video.dashPlayer.reset();
+            video.dashPlayer = null;
+        }
+        
+        if (video.hlsPlayer) {
+            video.hlsPlayer.destroy();
+            video.hlsPlayer = null;
+        }
+
+        video.load(); // Reset the video element
 
         const handlePlayerError = (error) => {
             console.error('Player error:', error);
@@ -117,10 +135,19 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Failed to load stream.`);
         };
 
-        const handlePlayerSuccess = () => {
+        const handlePlayerSuccess = (isAudioOnly = false) => {
             spinner.style.display = 'none';
             video.style.display = 'block';
             video.play().catch(error => console.error('Error playing video:', error));
+
+            if (isAudioOnly) {
+                channelIconElement.src = channelIcon;
+                channelIconElement.style.display = 'block';
+            }else {
+                if (channelIconElement) {
+                    channelIconElement.remove(); // Remove the icon from the DOM
+                }
+            }
         };
 
         const handleBuffering = () => {
@@ -134,31 +161,39 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const initializeDashPlayer = () => {
-            const dashPlayer = dashjs.MediaPlayer().create();
-            dashPlayer.initialize(video, url, true);
-            dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
-            dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
-            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
-            dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
-            dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
-            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
+            video.dashPlayer = dashjs.MediaPlayer().create();
+            video.dashPlayer.initialize(video, url, true);
+            video.dashPlayer.updateSettings({
+                streaming: {
+                    buffer: {
+                        stableBufferTime: 20,
+                    },
+                    lowLatencyEnabled: true,
+                    delay: {
+                        liveDelay: 2
+                    }
+                }
+            });
+            video.dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => handlePlayerSuccess(false));
+            video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
         };
 
         const initializeHlsPlayer = () => {
-            const hls = new Hls();
-            hls.loadSource(url);
-            hls.config.maxBufferLength = 120; // Max buffer length in seconds
-            hls.config.maxMaxBufferLength = 240; // Max max buffer length in seconds
-            hls.config.lowBufferWatchdogPeriod = 0.5; // Low buffer watchdog period
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
-            hls.on(Hls.Events.BUFFER_STALLED, handleBuffering);
-            hls.on(Hls.Events.BUFFER_APPENDING, handleBufferingEnd);
-            hls.on(Hls.Events.ERROR, (event, data) => {
+            video.hlsPlayer = new Hls();
+            video.hlsPlayer.loadSource(url);
+            video.hlsPlayer.config.maxBufferLength = 120;
+            video.hlsPlayer.config.maxMaxBufferLength = 240;
+            video.hlsPlayer.attachMedia(video);
+            video.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => handlePlayerSuccess(false));
+            video.hlsPlayer.on(Hls.Events.BUFFER_STALLED, handleBuffering);
+            video.hlsPlayer.on(Hls.Events.BUFFER_APPENDING, handleBufferingEnd);
+            video.hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
                     handlePlayerError(data);
                     if (data.type === Hls.ErrorTypes.MEDIA_ERROR && data.details === 'bufferAppendError') {
-                        hls.recoverMediaError();
+                        video.hlsPlayer.recoverMediaError();
                     }
                 }
             });
@@ -166,14 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const initializeNativePlayer = (mimeType) => {
             video.src = url;
-            video.preload = 'auto'; // Preload video for smoother playback
-            video.addEventListener('loadedmetadata', handlePlayerSuccess);
+            video.preload = 'auto';
+            video.addEventListener('loadedmetadata', () => handlePlayerSuccess(mimeType === 'audio/aac'));
             video.addEventListener('waiting', handleBuffering);
             video.addEventListener('playing', handleBufferingEnd);
             video.addEventListener('error', handlePlayerError);
         };
 
-        // Determine the type of the stream based on the file extension
         const fileExtension = url.split('.').pop();
 
         switch (fileExtension) {
@@ -224,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const title = document.createElement('div');
             title.classList.add('card-slider-title');
-            title.textContent = `Channels for Source: ${sourceId}`;
+            title.textContent = `${sourceId}`;
 
             header.appendChild(title);
             wrapper.appendChild(header);
@@ -244,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="live-badge">LIVE</div>
                     </div>
                 `;
-                card.addEventListener('click', () => initializePlayer(source.url, source.label));
+                card.addEventListener('click', () => initializePlayer(source.url, source.label, source.logo));
                 slider.appendChild(card);
             });
 

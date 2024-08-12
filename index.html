@@ -4,18 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zastv</title>
+
+    <!-- Preload and Load Stylesheets -->
+    <link rel="preload" href="styles.css" as="style">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- Preload and Load Scripts -->
+    <link rel="preload" href="https://cdn.plyr.io/3.7.8/plyr.js" as="script">
+    <link rel="preload" href="https://cdn.dashjs.org/latest/dash.all.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@latest" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.2.0/dist/hls.min.js" as="script">
 </head>
 <body>
+    <!-- Waves Animation -->
     <div class="wave"></div>
     <div class="wave"></div>
     <div class="wave"></div>
+
+    <!-- Main Container -->
     <div id="main-container">
+        <!-- Player Container -->
         <div id="player-container">
             <video id="player" controls></video>
             <div id="epg-tooltip" class="epg-tooltip"></div> <!-- Tooltip element -->
+            <div id="channel-icon-container">
+                <img id="channel-icon" src="" alt="Channel Icon" style="display:none;">
+            </div>
         </div>
+
+        <!-- EPG Wrapper -->
         <div id="epg-wrapper">
             <div id="now-playing">
                 <p>Now Playing: <span id="channel-name">None</span></p>
@@ -25,20 +43,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Sliders Container -->
     <div id="sliders-container">
         <!-- Card sliders will be dynamically populated here -->
     </div>
+
+    <!-- Loading Spinner -->
     <div id="spinner" style="display: none;">
         <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
-
-    <dotlottie-player src="https://lottie.host/6cec0a31-105b-4ef4-a1b7-6339964ee751/FNJDvPRJU0.json" background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
+        <dotlottie-player src="https://lottie.host/6cec0a31-105b-4ef4-a1b7-6339964ee751/FNJDvPRJU0.json" background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
     </div>
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.2.0/dist/hls.min.js"></script>
-    <script src="source.js"></script>
-    <script src="app.js"></script>
+    <!-- Load Scripts -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js" defer></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.2.0/dist/hls.min.js" defer></script>
+    <script src="source.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
