@@ -111,6 +111,20 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = 'block';
         video.style.display = 'none';
 
+        // Clean up existing players or processes
+        if (video.dashPlayer) {
+            video.dashPlayer.reset();
+            video.dashPlayer = null;
+        }
+        
+        if (video.hlsPlayer) {
+            video.hlsPlayer.destroy();
+            video.hlsPlayer = null;
+        }
+        
+        //video.src = ''; // Clear the current video source
+        video.load(); // Reset the video element
+
         const handlePlayerError = (error) => {
             console.error('Player error:', error);
             spinner.style.display = 'none';
@@ -134,31 +148,31 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const initializeDashPlayer = () => {
-            const dashPlayer = dashjs.MediaPlayer().create();
-            dashPlayer.initialize(video, url, true);
-            dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
-            dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
-            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
-            dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
-            dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
-            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
+            video.dashPlayer = dashjs.MediaPlayer().create();
+            video.dashPlayer.initialize(video, url, true);
+            video.dashPlayer.setBufferTimeAtTopQualityLongForm(60); // Set buffer time for top quality
+            video.dashPlayer.setStableBufferTime(60); // Stable buffer time for smoother playback
+            video.dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, handlePlayerSuccess);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, handleBuffering);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.BUFFER_LOADED, handleBufferingEnd);
+            video.dashPlayer.on(dashjs.MediaPlayer.events.ERROR, handlePlayerError);
         };
 
         const initializeHlsPlayer = () => {
-            const hls = new Hls();
-            hls.loadSource(url);
-            hls.config.maxBufferLength = 120; // Max buffer length in seconds
-            hls.config.maxMaxBufferLength = 240; // Max max buffer length in seconds
-            hls.config.lowBufferWatchdogPeriod = 0.5; // Low buffer watchdog period
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
-            hls.on(Hls.Events.BUFFER_STALLED, handleBuffering);
-            hls.on(Hls.Events.BUFFER_APPENDING, handleBufferingEnd);
-            hls.on(Hls.Events.ERROR, (event, data) => {
+            video.hlsPlayer = new Hls();
+            video.hlsPlayer.loadSource(url);
+            video.hlsPlayer.config.maxBufferLength = 120; // Max buffer length in seconds
+            video.hlsPlayer.config.maxMaxBufferLength = 240; // Max max buffer length in seconds
+            video.hlsPlayer.config.lowBufferWatchdogPeriod = 0.5; // Low buffer watchdog period
+            video.hlsPlayer.attachMedia(video);
+            video.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, handlePlayerSuccess);
+            video.hlsPlayer.on(Hls.Events.BUFFER_STALLED, handleBuffering);
+            video.hlsPlayer.on(Hls.Events.BUFFER_APPENDING, handleBufferingEnd);
+            video.hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
                     handlePlayerError(data);
                     if (data.type === Hls.ErrorTypes.MEDIA_ERROR && data.details === 'bufferAppendError') {
-                        hls.recoverMediaError();
+                        video.hlsPlayer.recoverMediaError();
                     }
                 }
             });
