@@ -143,7 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAudioOnly) {
                 channelIconElement.src = channelIcon;
                 channelIconElement.style.display = 'block';
+            }else {
+                if (channelIconElement) {
+                    channelIconElement.remove(); // Remove the icon from the DOM
+                }
             }
+
         };
 
         const handleBuffering = () => {
