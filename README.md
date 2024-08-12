@@ -1,7 +1,3 @@
-Here's the final README with the additional details for changing the M3U8 source and EPG fetch:
-
----
-
 # Zastv
 
 ## Overview
