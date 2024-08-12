@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     channelIconElement.remove(); // Remove the icon from the DOM
                 }
             }
-
         };
 
         const handleBuffering = () => {

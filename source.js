@@ -4,8 +4,6 @@ let videoSources = [];
 // URLs of M3U playlists with identifiers
 const m3uUrls = [
     { id: 'MyFreeview', url: 'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8' },
-    //{ id: 'ZAST', url: 'https://raw.githubusercontent.com/imanawesome2010/sooka/main/sooka.m3u' }
-    //{ id: 'Mtest', url: 'https://iptv-org.github.io/iptv/countries/my.m3u' }
     // Add more sources here with unique IDs
 ];
 // Function to check if the channel is online
