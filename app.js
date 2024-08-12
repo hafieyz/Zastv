@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const title = document.createElement('div');
             title.classList.add('card-slider-title');
-            title.textContent = `Channels for Source: ${sourceId}`;
+            title.textContent = `${sourceId}`;
 
             header.appendChild(title);
             wrapper.appendChild(header);
