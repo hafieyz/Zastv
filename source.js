@@ -3,7 +3,8 @@ let videoSources = [];
 
 // URLs of M3U playlists with identifiers
 const m3uUrls = [
-    { id: 'MyFreeview', url: 'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8' },
+   { id: 'MyFreeview', url: 'https://raw.githubusercontent.com/weareblahs/freeview/main/mytv_broadcasting.m3u8' },
+    //{ id: 'Aqfadtv', url: 'https://raw.githubusercontent.com/hafieyz/HyperZTV/main/tv.m3u?token=GHSAT0AAAAAACVEUCVUUW7FDZE2D4FZCIZMZWJ6GEQ' },
     // Add more sources here with unique IDs
 ];
 // Function to check if the channel is online
